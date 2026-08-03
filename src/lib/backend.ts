@@ -81,6 +81,16 @@ async function get<T>(path: string, fallback: T): Promise<T> {
   }
 }
 
+/** PATCH with no body. Returns whether the backend accepted the mutation. */
+async function patch(path: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${BACKEND_URL}${path}`, { method: 'PATCH' })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 // --- Endpoints --------------------------------------------------------------
 
 export const backend = {
@@ -107,4 +117,9 @@ export const backend = {
         : `/api/events?limit=${limit}`,
       []
     ),
+
+  markNotificationRead: (id: number) => patch(`/api/notifications/${id}/read`),
+
+  markAllNotificationsRead: (address: string) =>
+    patch(`/api/notifications/read-all?address=${encodeURIComponent(address)}`),
 }

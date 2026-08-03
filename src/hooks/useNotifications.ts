@@ -6,11 +6,11 @@
  * swap its imports. Notifications are scoped to the connected wallet; the
  * activity feed is the DAO-wide indexed event stream.
  *
- * Marking-as-read and removal are tracked client-side for now — the backend
- * exposes read state but no mutation endpoint yet (planned).
+ * Marking-as-read is persisted via the backend's mutation endpoints; removal
+ * stays client-side only since there's no delete endpoint.
  */
 import { useCallback, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useWallet } from '@/lib/wallet'
 import { backend, type BackendEvent, type BackendNotification } from '@/lib/backend'
 import { formatStellarAddress } from '@/lib/stellar'
@@ -37,6 +37,7 @@ function toNotification(n: BackendNotification): NotificationData {
  */
 export function useAutoNotifications() {
   const { address } = useWallet()
+  const queryClient = useQueryClient()
   const [readIds, setReadIds] = useState<Set<string>>(new Set())
   const [removedIds, setRemovedIds] = useState<Set<string>>(new Set())
 
@@ -56,13 +57,29 @@ export function useAutoNotifications() {
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications])
 
-  const markAsRead = useCallback((id: string) => {
-    setReadIds((prev) => new Set(prev).add(id))
-  }, [])
+  // Optimistic local flip so the UI updates instantly; the backend call
+  // persists it, and a refetch reconciles with the indexed state.
+  const markAsRead = useCallback(
+    (id: string) => {
+      setReadIds((prev) => new Set(prev).add(id))
+      const numericId = Number(id)
+      if (Number.isFinite(numericId)) {
+        backend.markNotificationRead(numericId).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['notifications', address] })
+        })
+      }
+    },
+    [queryClient, address]
+  )
 
   const markAllAsRead = useCallback(() => {
     setReadIds(new Set((data ?? []).map((n) => String(n.id))))
-  }, [data])
+    if (address) {
+      backend.markAllNotificationsRead(address).then(() => {
+        queryClient.invalidateQueries({ queryKey: ['notifications', address] })
+      })
+    }
+  }, [data, address, queryClient])
 
   const removeNotification = useCallback((id: string) => {
     setRemovedIds((prev) => new Set(prev).add(id))
