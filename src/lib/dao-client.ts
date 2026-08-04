@@ -264,6 +264,19 @@ export function daoWrite(
 
     attachDocument: (kind: 'Loan' | 'Treasury', proposalId: number, contentHash: Uint8Array) =>
       send('attach_document', sc.addr(address), sc.proposalKind(kind), sc.u32(proposalId), sc.bytes(contentHash)),
+
+    // Admin-only entrypoints. The contract itself enforces the admin check
+    // (`util::require_admin`) — `address` here is the connected wallet acting
+    // as `caller`, not necessarily an admin; a non-admin call simply fails
+    // on-chain with NotAdmin.
+    addAdmin: (admin: string) => send('add_admin', sc.addr(address), sc.addr(admin)),
+    removeAdmin: (admin: string) => send('remove_admin', sc.addr(address), sc.addr(admin)),
+    setConsensusThreshold: (thresholdBps: number) =>
+      send('set_consensus_threshold', sc.addr(address), sc.u32(thresholdBps)),
+    setLoanPolicy: (policy: LoanPolicyInput) =>
+      send('set_loan_policy', sc.addr(address), policyToScVal(policy)),
+    pause: () => send('pause', sc.addr(address)),
+    unpause: () => send('unpause', sc.addr(address)),
   }
 }
 
