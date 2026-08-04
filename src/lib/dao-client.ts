@@ -37,7 +37,9 @@ export const sc = {
   u32: (v: number): xdr.ScVal => nativeToScVal(v, { type: 'u32' }),
   u64: (v: bigint | number): xdr.ScVal =>
     nativeToScVal(BigInt(v), { type: 'u64' }),
-  bool: (v: boolean): xdr.ScVal => nativeToScVal(v, { type: 'bool' }),
+  // Booleans map unambiguously to scvBool; nativeToScVal needs no type hint
+  // (there's no 'bool' entry in its ScValType union at all).
+  bool: (v: boolean): xdr.ScVal => nativeToScVal(v),
   str: (v: string): xdr.ScVal => nativeToScVal(v, { type: 'string' }),
   bytes: (v: Uint8Array): xdr.ScVal => xdr.ScVal.scvBytes(v as Buffer),
   vecAddr: (list: string[]): xdr.ScVal =>
