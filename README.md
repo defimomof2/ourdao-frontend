@@ -1,5 +1,7 @@
 # OurDAO Frontend
 
+[![CI](https://github.com/ourdao/ourdao-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ourdao/ourdao-frontend/actions/workflows/ci.yml)
+
 A [Next.js](https://nextjs.org) web app for the **OurDAO** member-owned lending DAO on **Stellar Soroban**.
 
 This frontend was ported from an EVM stack (wagmi / RainbowKit / ethers) to Stellar:
@@ -28,8 +30,9 @@ All config is env-driven with public-testnet defaults (see `.env.example`):
 | `NEXT_PUBLIC_SOROBAN_RPC_URL` | Soroban RPC endpoint | `https://soroban-testnet.stellar.org` |
 | `NEXT_PUBLIC_NETWORK_PASSPHRASE` | Network passphrase | testnet |
 | `NEXT_PUBLIC_IPFS_GATEWAY` | Gateway for document content hashes | Pinata |
+| `NEXT_PUBLIC_BACKEND_URL` | [`ourdao-backend`](https://github.com/ourdao/ourdao-backend) indexer/API (loan history, notifications, admin log, events) | `http://localhost:4000` |
 
-Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/writes are disabled until you point it at a deployed contract.
+Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/writes are disabled until you point it at a deployed contract. Without a reachable backend, everything backend-derived (loan history, notifications, activity/admin logs) degrades to empty rather than erroring — see `src/lib/backend.ts`.
 
 ## Where the Stellar integration lives
 
@@ -48,4 +51,16 @@ npm run dev     # dev server (http://localhost:3000)
 npm run build   # production build
 npm start       # serve the production build
 npm run lint    # eslint
+npm test        # vitest
 ```
+
+## Testing
+
+Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage so far: `dao-client.ts`'s ScVal builders, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers, and `useNotifications.ts`'s hooks (mocking `@/lib/wallet` and `@/lib/backend`, rendered against a real `QueryClientProvider`). CI runs lint, test, and build on every push/PR — see `.github/workflows/ci.yml`.
+
+## What's real vs. not
+
+Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, and (as of this pass) admin actions (pause/unpause, add/remove admin, set consensus threshold) and an admin/governance audit log. Two known gaps remain:
+
+- **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
+- A backlog of pre-existing TypeScript errors (unrelated to Stellar/DAO logic — see `next.config.ts`'s `typescript.ignoreBuildErrors`) that predate the Soroban port and don't block `next build`, but do mean `tsc --noEmit` isn't clean yet.
