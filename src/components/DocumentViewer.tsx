@@ -42,12 +42,6 @@ export default function DocumentViewer({
   // Check if user has access
   const hasAccess = canAccessDocument(doc, userAddress, userRoles)
 
-  useEffect(() => {
-    if (hasAccess && !doc.encrypted) {
-      loadDocument()
-    }
-  }, [hasAccess, doc.hash])
-
   const loadDocument = async (decryptPassword?: string) => {
     if (!hasAccess) {
       setError('You do not have permission to view this doc')
@@ -84,6 +78,12 @@ export default function DocumentViewer({
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (hasAccess && !doc.encrypted) {
+      loadDocument()
+    }
+  }, [hasAccess, doc.hash])
 
   const handleDecrypt = () => {
     if (!password.trim()) {
