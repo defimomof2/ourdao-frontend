@@ -38,17 +38,35 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  /** Shows a spinner and disables the button while true. */
+  loading?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading = false, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        disabled={disabled || loading}
+        aria-busy={loading || undefined}
         {...props}
-      />
+      >
+        {/* asChild renders via Radix Slot, which requires `children` to be
+            exactly one element (even a `false` sibling breaks its arity
+            check) — so that path must get `children` completely unwrapped. */}
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {loading && (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            )}
+            {children}
+          </>
+        )}
+      </Comp>
     )
   }
 )
