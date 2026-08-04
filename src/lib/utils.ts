@@ -24,9 +24,9 @@ export function formatToken(
 ): string {
   try {
     const v = typeof value === 'bigint' ? value : BigInt(String(value).split('.')[0] || '0')
-    const neg = v < 0n
+    const neg = v < BigInt(0)
     const abs = neg ? -v : v
-    const base = 10n ** BigInt(decimals)
+    const base = BigInt(10) ** BigInt(decimals)
     const whole = (abs / base).toString()
     const frac = (abs % base)
       .toString()

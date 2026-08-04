@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react'
 
-// PWA BeforeInstallPrompt event interface
+// PWA BeforeInstallPrompt event interface. Not part of lib.dom (it's a
+// Chromium-only extension), so it's declared here and merged into
+// WindowEventMap below so addEventListener('beforeinstallprompt', ...) typechecks.
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed', platform: string }>
+}
+
+declare global {
+  interface WindowEventMap {
+    beforeinstallprompt: BeforeInstallPromptEvent
+  }
 }
 
 // Breakpoint definitions (following Tailwind CSS conventions)
