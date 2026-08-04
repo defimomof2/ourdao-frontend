@@ -31,6 +31,7 @@ import {
   useProposalDocument,
   useAttachDocument,
 } from '@/hooks/useDAO'
+import { useNow } from '@/hooks/useNow'
 import { formatEther, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS, IPFS_GATEWAY } from '@/constants'
 import toast from 'react-hot-toast'
@@ -42,6 +43,7 @@ export default function LoanDetailsPage() {
   const userData = useUserData()
   const { voteOnProposal, isPending: isVoting } = useVoting()
   const { repayLoan, isPending: isRepaying } = useLoanRepayment()
+  const now = useNow()
   
   const loanId = parseInt(params.id as string)
   const { proposal, isLoading } = useLoanProposal(loanId)
@@ -157,11 +159,12 @@ export default function LoanDetailsPage() {
   }
 
   const canVote = () => {
-    return userData.isMember && 
-           loan.status === 2 && 
-           !loan.hasVoted && 
+    return now !== null &&
+           userData.isMember &&
+           loan.status === 2 &&
+           !loan.hasVoted &&
            loan.borrower !== userData.address &&
-           loan.votingEndTime > Math.floor(Date.now() / 1000)
+           loan.votingEndTime > Math.floor(now / 1000)
   }
 
   const isBorrower = () => {
@@ -261,7 +264,12 @@ export default function LoanDetailsPage() {
                     </div>
 
                     <div className="flex justify-between items-center text-sm text-gray-600">
-                      <span>Voting ends in: {Math.ceil((loan.votingEndTime - Math.floor(Date.now() / 1000)) / 86400)} days</span>
+                      <span>
+                        Voting ends in:{' '}
+                        {now === null
+                          ? '…'
+                          : `${Math.ceil((loan.votingEndTime - Math.floor(now / 1000)) / 86400)} days`}
+                      </span>
                       <span>Total votes: {loan.votesFor + loan.votesAgainst}</span>
                     </div>
                   </div>

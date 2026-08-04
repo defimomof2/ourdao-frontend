@@ -18,6 +18,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { useUserData, useVoting, useLoanProposals, type UILoanProposal } from '@/hooks/useDAO'
+import { useNow } from '@/hooks/useNow'
 import { formatEther, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
 import toast from 'react-hot-toast'
@@ -27,6 +28,7 @@ export default function LoansPage() {
   const userData = useUserData()
   const { voteOnProposal, isPending } = useVoting()
   const { proposals, isLoading } = useLoanProposals()
+  const now = useNow()
 
   const [filters, setFilters] = useState({
     status: 'all',
@@ -104,11 +106,12 @@ export default function LoansPage() {
   }
 
   const canVote = (proposal: UILoanProposal) => {
-    return userData.isMember && 
-           proposal.status === 2 && 
-           !proposal.hasVoted && 
+    return now !== null &&
+           userData.isMember &&
+           proposal.status === 2 &&
+           !proposal.hasVoted &&
            proposal.borrower !== userData.address &&
-           proposal.votingEndTime > Math.floor(Date.now() / 1000)
+           proposal.votingEndTime > Math.floor(now / 1000)
   }
 
   return (
@@ -350,8 +353,10 @@ export default function LoansPage() {
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
                         <span>Voting Progress</span>
                         <span>
-                          {proposal.votesFor + proposal.votesAgainst} votes • 
-                          {Math.ceil((proposal.votingEndTime - Math.floor(Date.now() / 1000)) / 86400)} days left
+                          {proposal.votesFor + proposal.votesAgainst} votes •{' '}
+                          {now === null
+                            ? '…'
+                            : `${Math.ceil((proposal.votingEndTime - Math.floor(now / 1000)) / 86400)} days left`}
                         </span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
