@@ -21,6 +21,7 @@ describe('toLoan', () => {
       status: 'active',
       approved_ledger: 50,
       repaid_ledger: null,
+      defaulted_ledger: null,
       updated_at: '',
     }
     const loan = toLoan(l)
@@ -39,6 +40,7 @@ describe('toLoan', () => {
       status: 'active',
       approved_ledger: null,
       repaid_ledger: null,
+      defaulted_ledger: null,
       updated_at: '',
     }
     expect(toLoan(l).amountPaid).toBe(BigInt(0))
@@ -53,6 +55,22 @@ describe('toLoan', () => {
       status: 'repaid',
       approved_ledger: 1,
       repaid_ledger: 2,
+      defaulted_ledger: null,
+      updated_at: '',
+    }
+    expect(toLoan(l).isActive).toBe(false)
+  })
+
+  it('marks a defaulted loan as not active', () => {
+    const l: BackendLoan = {
+      id: 4,
+      borrower: 'GA',
+      amount: '100',
+      outstanding: '60',
+      status: 'defaulted',
+      approved_ledger: 1,
+      repaid_ledger: null,
+      defaulted_ledger: 5,
       updated_at: '',
     }
     expect(toLoan(l).isActive).toBe(false)

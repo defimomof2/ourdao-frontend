@@ -34,9 +34,10 @@ export interface BackendLoan {
   borrower: string
   amount: string
   outstanding: string
-  status: 'active' | 'repaid'
+  status: 'active' | 'repaid' | 'defaulted'
   approved_ledger: number | null
   repaid_ledger: number | null
+  defaulted_ledger: number | null
   updated_at: string
 }
 
