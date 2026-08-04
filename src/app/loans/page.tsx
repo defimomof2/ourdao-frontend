@@ -294,10 +294,14 @@ export default function LoansPage() {
                             Loan Proposal #{proposal.id}
                           </CardTitle>
                           {proposal.isPrivate && (
-                            <EyeOff className="h-4 w-4 text-purple-600" title="Private Loan" />
+                            <span title="Private Loan">
+                              <EyeOff className="h-4 w-4 text-purple-600" />
+                            </span>
                           )}
                           {proposal.documentHash && (
-                            <FileText className="h-4 w-4 text-blue-600" title="Has Documents" />
+                            <span title="Has Documents">
+                              <FileText className="h-4 w-4 text-blue-600" />
+                            </span>
                           )}
                         </div>
                         <CardDescription>
