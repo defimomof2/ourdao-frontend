@@ -16,7 +16,7 @@ import {
   ArrowUpRightIcon,
   TrophyIcon,
 } from '@heroicons/react/24/outline'
-import { useDAOStats, useUserData, useRewards, useDAOEvents } from '@/hooks/useDAO'
+import { useDAOStats, useUserData, useRewards, useDAOEvents, eventLabel } from '@/hooks/useDAO'
 import { formatEther, formatDate, formatAddress } from '@/lib/utils'
 import { MEMBER_STATUS_LABELS } from '@/constants'
 import toast from 'react-hot-toast'
@@ -423,9 +423,7 @@ export default function DashboardPage() {
                     {events.slice(0, 5).map((event, index) => (
                       <div key={index} className="flex items-center space-x-3 text-sm">
                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                        <span className="text-gray-600">
-                          {String(event?.type || 'Unknown')} event occurred
-                        </span>
+                        <span className="text-gray-600">{eventLabel(event?.symbol)}</span>
                       </div>
                     ))}
                   </div>

@@ -269,6 +269,44 @@ export function useDAOEvents() {
   return { events, setEvents }
 }
 
+/** Human-readable label for a raw contract event topic symbol (e.g. `loan_dflt`
+ *  -> "Loan defaulted"). Unknown symbols fall back to the raw name rather than
+ *  a generic "Unknown event" so new event types stay legible without a code change. */
+const EVENT_LABELS: Record<string, string> = {
+  joined: 'New member joined',
+  exited: 'Member exited',
+  claimed: 'Yield claimed',
+  loan_req: 'Loan requested',
+  loan_edit: 'Loan proposal edited',
+  loan_vote: 'Loan vote cast',
+  loan_appr: 'Loan approved',
+  loan_rpy: 'Loan repayment',
+  loan_dflt: 'Loan defaulted',
+  interest: 'Interest distributed',
+  tre_prop: 'Treasury withdrawal proposed',
+  tre_vote: 'Treasury vote cast',
+  tre_exec: 'Treasury withdrawal executed',
+  staked: 'Member staked',
+  unstaked: 'Member unstaked',
+  name_reg: 'Name registered',
+  committed: 'Private vote committed',
+  revealed: 'Private vote revealed',
+  doc_attn: 'Document attached',
+  init: 'DAO initialized',
+  admin_add: 'Admin added',
+  admin_rem: 'Admin removed',
+  threshold: 'Consensus threshold updated',
+  policy: 'Loan policy updated',
+  paused: 'DAO paused',
+  unpaused: 'DAO unpaused',
+}
+
+export function eventLabel(symbol: unknown): string {
+  const key = String(symbol ?? '').trim()
+  if (!key) return 'Unknown event'
+  return EVENT_LABELS[key] ?? key
+}
+
 // ---------------------------------------------------------------------------
 // Proposal enumeration
 //
