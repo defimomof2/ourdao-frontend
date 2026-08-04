@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { useWallet } from '@/lib/wallet'
 import { CONTRACT_ID, isContractConfigured } from '@/lib/stellar'
 import { daoRead, daoWrite } from '@/lib/dao-client'
-import { backend, type BackendLoan } from '@/lib/backend'
+import { backend, type BackendEvent, type BackendLoan } from '@/lib/backend'
 import type { UserData, DAOStats, Loan } from '@/types/dao'
 import { MemberStatus } from '@/types/dao'
 
@@ -504,4 +504,49 @@ export function useAttachDocument() {
       w.attachDocument(kind, proposalId, new TextEncoder().encode(cid.trim()))
     )
   return { attach, isPending, isSuccess, error }
+}
+
+// ---------------------------------------------------------------------------
+// Admin actions + audit log
+//
+// The contract enforces admin authorization itself; these just expose the
+// entrypoints. A non-admin caller gets a NotAdmin error back from the write,
+// surfaced the same way any other failed write is (via the toast in
+// useWriteAction).
+// ---------------------------------------------------------------------------
+
+export function useAdminActions() {
+  const { run, isPending, isSuccess, error } = useWriteAction()
+  const pause = () => run('Pausing the DAO', (w) => w.pause())
+  const unpause = () => run('Unpausing the DAO', (w) => w.unpause())
+  const addAdmin = (admin: string) => run('Adding admin', (w) => w.addAdmin(admin))
+  const removeAdmin = (admin: string) => run('Removing admin', (w) => w.removeAdmin(admin))
+  const setThreshold = (thresholdBps: number) =>
+    run('Updating consensus threshold', (w) => w.setConsensusThreshold(thresholdBps))
+  return { pause, unpause, addAdmin, removeAdmin, setThreshold, isPending, isSuccess, error }
+}
+
+export interface AdminLogEntry {
+  id: string
+  symbol: string
+  ledger: number
+  closedAt: string
+  data: unknown
+}
+
+function toAdminLogEntry(ev: BackendEvent): AdminLogEntry {
+  return { id: ev.id, symbol: ev.symbol, ledger: ev.ledger, closedAt: ev.closed_at, data: ev.data }
+}
+
+/** The admin/governance event history (init, admin add/remove, threshold,
+ *  policy, pause/unpause), indexed off-chain since the contract keeps no
+ *  queryable log of its own admin actions. */
+export function useAdminLog(limit = 50) {
+  const { data, isLoading } = useQuery({
+    queryKey: ['adminLog', limit],
+    queryFn: () => backend.getAdminLog(limit),
+    refetchInterval: 15_000,
+  })
+  const entries = useMemo(() => (data ?? []).map(toAdminLogEntry), [data])
+  return { entries, isLoading }
 }

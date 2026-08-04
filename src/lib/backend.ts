@@ -118,6 +118,8 @@ export const backend = {
       []
     ),
 
+  getAdminLog: (limit = 50) => get<BackendEvent[]>(`/api/admin/log?limit=${limit}`, []),
+
   markNotificationRead: (id: number) => patch(`/api/notifications/${id}/read`),
 
   markAllNotificationsRead: (address: string) =>
