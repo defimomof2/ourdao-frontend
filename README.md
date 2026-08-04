@@ -61,7 +61,7 @@ Vitest + Testing Library, jsdom by default (pure-logic suites that don't need th
 
 ## What's real vs. not
 
-Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, and (as of this pass) admin actions (pause/unpause, add/remove admin, set consensus threshold) and an admin/governance audit log. One known gap remains:
+Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, admin actions (pause/unpause, add/remove admin, set consensus threshold), an admin/governance audit log, and (as of this pass) loan defaults — `markLoanDefaulted` is exposed in `dao-client.ts`, and the dashboard's Recent Activity feed labels every real event (including `loan_dflt`) instead of the "Unknown event occurred" it showed for everything before this pass. One known gap remains:
 
 - **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
 
