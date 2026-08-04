@@ -13,7 +13,7 @@ import { MemberStatus } from '@/types/dao'
 // Map an indexed backend loan onto the frontend Loan shape. The indexer tracks
 // principal, outstanding balance and status; fields it doesn't yet index
 // (interest rate, term, collateral) default to 0.
-function toLoan(l: BackendLoan): Loan {
+export function toLoan(l: BackendLoan): Loan {
   const amount = asBigInt(l.amount)
   const outstanding = asBigInt(l.outstanding)
   return {
@@ -33,12 +33,12 @@ function toLoan(l: BackendLoan): Loan {
 
 // A Soroban unit-enum decodes as either a bare symbol string or a one-element
 // array of it; normalize both to our numeric MemberStatus.
-function toMemberStatus(raw: unknown): MemberStatus {
+export function toMemberStatus(raw: unknown): MemberStatus {
   const tag = Array.isArray(raw) ? raw[0] : raw
   return tag === 'ActiveMember' ? MemberStatus.ACTIVE_MEMBER : MemberStatus.INACTIVE_MEMBER
 }
 
-const asBigInt = (v: unknown): bigint => {
+export const asBigInt = (v: unknown): bigint => {
   try {
     return typeof v === 'bigint' ? v : BigInt((v as number | string) ?? 0)
   } catch {
@@ -281,10 +281,10 @@ export function useDAOEvents() {
 const VOTING_PERIOD = 7 * 24 * 60 * 60
 const MAX_ENUMERATE = 100
 
-const tag = (v: unknown): string => String(Array.isArray(v) ? v[0] : v)
+export const tag = (v: unknown): string => String(Array.isArray(v) ? v[0] : v)
 
 /** Map the contract's phase+status onto the UI's numeric ProposalStatus. */
-function loanStatusCode(raw: Record<string, unknown>): number {
+export function loanStatusCode(raw: Record<string, unknown>): number {
   const status = tag(raw.status)
   const phase = tag(raw.phase)
   if (status === 'Approved') return 3
@@ -312,7 +312,7 @@ export interface UILoanProposal {
   hasVoted: boolean
 }
 
-function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
+export function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
   const editingEnd = Number(raw.editing_period_end ?? 0)
   return {
     id: Number(raw.id ?? 0),
@@ -394,7 +394,7 @@ export interface UITreasuryProposal {
   isPrivate: boolean
 }
 
-function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryProposal {
+export function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryProposal {
   const status = tag(raw.status)
   const code = status === 'Executed' ? 5 : status === 'Rejected' ? 4 : 2
   const reason = String(raw.reason ?? '')
