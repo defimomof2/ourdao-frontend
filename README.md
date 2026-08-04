@@ -50,17 +50,19 @@ Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/
 npm run dev     # dev server (http://localhost:3000)
 npm run build   # production build
 npm start       # serve the production build
-npm run lint    # eslint
-npm test        # vitest
+npm run lint      # eslint
+npm run typecheck # tsc --noEmit
+npm test          # vitest
 ```
 
 ## Testing
 
-Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage so far: `dao-client.ts`'s ScVal builders, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers, and `useNotifications.ts`'s hooks (mocking `@/lib/wallet` and `@/lib/backend`, rendered against a real `QueryClientProvider`). CI runs lint, test, and build on every push/PR — see `.github/workflows/ci.yml`.
+Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage so far: `dao-client.ts`'s ScVal builders, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers, and `useNotifications.ts`'s hooks (mocking `@/lib/wallet` and `@/lib/backend`, rendered against a real `QueryClientProvider`). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`.
 
 ## What's real vs. not
 
-Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, and (as of this pass) admin actions (pause/unpause, add/remove admin, set consensus threshold) and an admin/governance audit log. Two known gaps remain:
+Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, and (as of this pass) admin actions (pause/unpause, add/remove admin, set consensus threshold) and an admin/governance audit log. One known gap remains:
 
 - **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
-- A backlog of pre-existing TypeScript errors (unrelated to Stellar/DAO logic — see `next.config.ts`'s `typescript.ignoreBuildErrors`) that predate the Soroban port and don't block `next build`, but do mean `tsc --noEmit` isn't clean yet.
+
+`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` still sets `typescript.ignoreBuildErrors`/`eslint.ignoreDuringBuilds` — safe to remove now, kept for now since the CI gate already covers both.
