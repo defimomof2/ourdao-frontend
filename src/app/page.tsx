@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { ConnectButton } from '@/components/ConnectButton'
 import Link from 'next/link'
@@ -14,11 +13,8 @@ import {
   FileText,
   TrendingUp,
   ArrowRight,
-  Star,
   Check,
   Github,
-  Twitter,
-  Linkedin,
   Globe,
   Zap,
   Lock,
@@ -28,7 +24,7 @@ import {
   X
 } from 'lucide-react'
 import { useDAOStats, useUserData, useDAOEvents } from '@/hooks/useDAO'
-import { formatEther } from '@/lib/utils'
+import { formatToken } from '@/lib/utils'
 import NotificationCenter from '@/components/NotificationCenter'
 import { useState } from 'react'
 
@@ -84,71 +80,6 @@ export default function Home() {
     'Community Governance',
     'Yield-Generating Treasury',
     'Real-time Notifications'
-  ]
-
-  const teamMembers = [
-    {
-      name: 'Alex Thompson',
-      role: 'Lead Developer & Founder',
-      avatar: '/api/placeholder/100/100',
-      description: 'Full-stack blockchain developer with 5+ years in DeFi. Previously at Compound and Aave.',
-      social: {
-        twitter: '#',
-        github: '#',
-        linkedin: '#'
-      }
-    },
-    {
-      name: 'Sarah Chen',
-      role: 'Smart Contract Architect',
-      avatar: '/api/placeholder/100/100', 
-      description: 'Security-focused Solidity expert. Former security auditor at OpenZeppelin.',
-      social: {
-        twitter: '#',
-        github: '#',
-        linkedin: '#'
-      }
-    },
-    {
-      name: 'Marcus Rodriguez',
-      role: 'Product Designer & UX Lead',
-      avatar: '/api/placeholder/100/100',
-      description: 'Design leader focused on making DeFi accessible. Ex-Coinbase Design team.',
-      social: {
-        twitter: '#',
-        github: '#',
-        linkedin: '#'
-      }
-    },
-    {
-      name: 'Emily Watson',
-      role: 'Community & Growth Manager',
-      avatar: '/api/placeholder/100/100',
-      description: 'Community building expert with deep roots in the DeFi ecosystem. Previously at MakerDAO.',
-      social: {
-        twitter: '#',
-        github: '#',
-        linkedin: '#'
-      }
-    },
-  ]
-
-  const testimonials = [
-    {
-      content: "OurDAO revolutionized how I access capital. The privacy features give me confidence in sensitive transactions.",
-      author: "Alex Chen",
-      role: "DeFi Entrepreneur",
-    },
-    {
-      content: "The automated approval system and yield generation make this the most advanced DAO I've participated in.",
-      author: "Sarah Martinez",
-      role: "Crypto Investor",
-    },
-    {
-      content: "ENS integration and document storage provide a professional lending experience that traditional banks can't match.",
-      author: "Michael Thompson",
-      role: "Web3 Developer",
-    },
   ]
 
   return (
@@ -348,7 +279,7 @@ export default function Home() {
                 <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
                   <BarChart3 className="h-8 w-8 text-blue-600" aria-hidden="true" />
                 </div>
-                <dt className="text-4xl font-bold text-blue-600">{formatEther(stats.treasuryBalance)} ETH</dt>
+                <dt className="text-4xl font-bold text-blue-600">{formatToken(stats.treasuryBalance)}</dt>
                 <dd className="mt-2 text-base font-medium text-gray-600">Treasury Balance</dd>
               </div>
               
@@ -456,86 +387,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <Badge variant="secondary" className="mb-3">Testimonials</Badge>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">
-              Trusted by DeFi Professionals
-            </h2>
-            <p className="text-xl leading-8 text-gray-600">
-              See what our community members have to say about their experience.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border border-gray-200 hover:shadow-xl transition-all duration-300">
-                <CardContent className="p-8">
-                  <div className="flex mb-6">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <blockquote className="text-lg leading-relaxed text-gray-700 mb-6">
-                    &ldquo;{testimonial.content}&rdquo;
-                  </blockquote>
-                  <div className="border-t border-gray-100 pt-6">
-                    <div className="font-semibold text-lg text-gray-900">{testimonial.author}</div>
-                    <div className="text-base text-gray-500">{testimonial.role}</div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-24 bg-gray-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center mb-16">
-            <Badge variant="secondary" className="mb-3">Our Team</Badge>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-6">
-              Builders Behind the Protocol
-            </h2>
-            <p className="text-xl leading-8 text-gray-600 mx-auto">
-              A diverse team of engineers, designers, and community leaders dedicated to building secure, inclusive DeFi.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {teamMembers.map((member) => (
-              <Card key={member.name} className="border border-gray-200 hover:shadow-lg transition-shadow text-center">
-                <CardContent className="p-6">
-                  <Avatar className="mx-auto mb-6 h-24 w-24">
-                    <AvatarImage src={member.avatar} alt={member.name} />
-                    <AvatarFallback className="text-lg font-semibold">
-                      {member.name.split(' ').map(n=>n[0]).join('').slice(0,2)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <h4 className="text-lg font-semibold text-gray-900 mb-1">{member.name}</h4>
-                  <p className="text-sm text-blue-600 font-medium mb-3">{member.role}</p>
-                  <p className="text-sm leading-relaxed text-gray-600 mb-6">{member.description}</p>
-                  <div className="flex items-center justify-center space-x-4">
-                    <a href={member.social.twitter} className="text-gray-400 hover:text-blue-500 transition-colors">
-                      <Twitter className="h-5 w-5" />
-                    </a>
-                    <a href={member.social.github} className="text-gray-400 hover:text-gray-900 transition-colors">
-                      <Github className="h-5 w-5" />
-                    </a>
-                    <a href={member.social.linkedin} className="text-gray-400 hover:text-blue-600 transition-colors">
-                      <Linkedin className="h-5 w-5" />
-                    </a>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -544,7 +395,7 @@ export default function Home() {
               Ready to Join the Future of Lending?
             </h2>
             <p className="mx-auto text-xl leading-8 text-blue-100 mb-10">
-              Connect your wallet and become part of the most advanced lending DAO on Ethereum.
+              Connect your wallet and become part of a member-owned lending DAO on Stellar.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -612,18 +463,17 @@ export default function Home() {
                   <h3 className="text-xl font-bold text-white">OurDAO</h3>
                 </div>
                 <p className="text-base leading-relaxed text-gray-400 mb-6 max-w-md">
-                  The most advanced peer-to-peer lending DAO with privacy features, 
-                  automated governance, and yield generation.
+                  A member-owned peer-to-peer lending DAO on Stellar, with commit-reveal
+                  private voting, automated governance, and yield generation.
                 </p>
                 <div className="flex space-x-4">
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                    <Twitter className="h-6 w-6" />
-                  </a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                  <a
+                    href="https://github.com/ourdao"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-gray-400 hover:text-white transition-colors"
+                  >
                     <Github className="h-6 w-6" />
-                  </a>
-                  <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                    <Globe className="h-6 w-6" />
                   </a>
                 </div>
               </div>
