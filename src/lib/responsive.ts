@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 
 // PWA BeforeInstallPrompt event interface. Not part of lib.dom (it's a
 // Chromium-only extension), so it's declared here and merged into
@@ -116,31 +116,6 @@ export const containerWidths = {
 
 export type ContainerWidth = keyof typeof containerWidths
 
-// Mobile navigation utilities
-export const useMobileNavigation = () => {
-  const [isOpen, setIsOpen] = useState(false)
-  const { screenSize } = useScreenSize()
-
-  // Auto-close mobile nav when screen becomes desktop
-  useEffect(() => {
-    if (['lg', 'xl', '2xl'].includes(screenSize)) {
-      setIsOpen(false)
-    }
-  }, [screenSize])
-
-  const toggle = () => setIsOpen(!isOpen)
-  const close = () => setIsOpen(false)
-  const open = () => setIsOpen(true)
-
-  return {
-    isOpen,
-    toggle,
-    close,
-    open,
-    isMobile: screenSize === 'sm' || screenSize === 'md'
-  }
-}
-
 // Touch gesture utilities for mobile
 export const useTouchGestures = () => {
   const [touchStart, setTouchStart] = useState<number | null>(null)
@@ -213,47 +188,35 @@ export const useResponsiveTable = (columns: string[]) => {
   }
 }
 
-// Performance optimization for mobile
-export const useReduceMotion = () => {
-  const [reduceMotion, setReduceMotion] = useState(false)
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduceMotion(mediaQuery.matches)
-
-    const handleChange = (event: MediaQueryListEvent) => {
-      setReduceMotion(event.matches)
-    }
-
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
-  }, [])
-
-  return reduceMotion
+// Network-aware loading for mobile
+interface NetworkConnection extends EventTarget {
+  effectiveType?: string
 }
 
-// Network-aware loading for mobile
+function getConnection(): NetworkConnection | undefined {
+  if (typeof navigator === 'undefined') return undefined
+  const nav = navigator as Navigator & {
+    connection?: NetworkConnection
+    mozConnection?: NetworkConnection
+    webkitConnection?: NetworkConnection
+  }
+  return nav.connection || nav.mozConnection || nav.webkitConnection
+}
+
+function subscribeToConnection(callback: () => void) {
+  const connection = getConnection()
+  if (!connection) return () => {}
+  connection.addEventListener('change', callback)
+  return () => connection.removeEventListener('change', callback)
+}
+
 export const useNetworkAware = () => {
-  const [connectionType, setConnectionType] = useState<string>('unknown')
-  const [isSlowConnection, setIsSlowConnection] = useState(false)
-
-  useEffect(() => {
-    // @ts-expect-error - navigator.connection is not in TypeScript definitions
-    const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection
-
-    if (connection) {
-      setConnectionType(connection.effectiveType || 'unknown')
-      setIsSlowConnection(['slow-2g', '2g'].includes(connection.effectiveType))
-
-      const handleChange = () => {
-        setConnectionType(connection.effectiveType || 'unknown')
-        setIsSlowConnection(['slow-2g', '2g'].includes(connection.effectiveType))
-      }
-
-      connection.addEventListener('change', handleChange)
-      return () => connection.removeEventListener('change', handleChange)
-    }
-  }, [])
+  const connectionType = useSyncExternalStore(
+    subscribeToConnection,
+    () => getConnection()?.effectiveType || 'unknown',
+    () => 'unknown'
+  )
+  const isSlowConnection = ['slow-2g', '2g'].includes(connectionType)
 
   return {
     connectionType,
@@ -262,58 +225,29 @@ export const useNetworkAware = () => {
   }
 }
 
-// Accessibility utilities for mobile
-export const useAccessibility = () => {
-  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'extra-large'>('normal')
-  const [highContrast, setHighContrast] = useState(false)
-
-  useEffect(() => {
-    // Check for accessibility preferences
-    const highContrastMode = window.matchMedia('(prefers-contrast: high)')
-    
-    setHighContrast(highContrastMode.matches)
-
-    const handleContrastChange = (e: MediaQueryListEvent) => {
-      setHighContrast(e.matches)
-    }
-
-    highContrastMode.addEventListener('change', handleContrastChange)
-    return () => highContrastMode.removeEventListener('change', handleContrastChange)
-  }, [])
-
-  const getFontSizeClass = (): string => {
-    const sizeMap = {
-      normal: '',
-      large: 'text-lg',
-      'extra-large': 'text-xl'
-    }
-    return sizeMap[fontSize]
-  }
-
-  const getContrastClass = (): string => {
-    return highContrast ? 'contrast-high' : ''
-  }
-
-  return {
-    fontSize,
-    setFontSize,
-    highContrast,
-    getFontSizeClass,
-    getContrastClass
-  }
+// Progressive Web App utilities
+function subscribeToStandaloneDisplayMode(callback: () => void) {
+  const mql = window.matchMedia('(display-mode: standalone)')
+  mql.addEventListener('change', callback)
+  return () => mql.removeEventListener('change', callback)
 }
 
-// Progressive Web App utilities
 export const usePWA = () => {
+  // Reading matchMedia() during render is impure; useSyncExternalStore is
+  // the sanctioned way to read this kind of live external state instead.
+  const isStandalone = useSyncExternalStore(
+    subscribeToStandaloneDisplayMode,
+    () => window.matchMedia('(display-mode: standalone)').matches,
+    () => false
+  )
   const [isInstallable, setIsInstallable] = useState(false)
-  const [isInstalled, setIsInstalled] = useState(false)
+  // display-mode doesn't flip to "standalone" within the same tab right
+  // after accepting the install prompt (only on the next standalone
+  // launch), so track that transition separately for immediate feedback.
+  const [justInstalled, setJustInstalled] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   useEffect(() => {
-    // Check if app is already installed
-    setIsInstalled(window.matchMedia('(display-mode: standalone)').matches)
-
-    // Listen for install prompt
     const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
       e.preventDefault()
       setDeferredPrompt(e)
@@ -332,19 +266,19 @@ export const usePWA = () => {
 
     deferredPrompt.prompt()
     const { outcome } = await deferredPrompt.userChoice
-    
+
     if (outcome === 'accepted') {
-      setIsInstalled(true)
+      setJustInstalled(true)
       setIsInstallable(false)
     }
-    
+
     setDeferredPrompt(null)
     return outcome === 'accepted'
   }
 
   return {
     isInstallable,
-    isInstalled,
+    isInstalled: isStandalone || justInstalled,
     promptInstall
   }
 }
