@@ -105,6 +105,7 @@ export function useUserData(): UserData {
 
 type ExtendedStats = DAOStats & {
   initialized: boolean
+  isPaused: boolean
   membershipFee: bigint
   consensusThreshold: number
   features: {
@@ -121,15 +122,16 @@ export function useDAOStats(): ExtendedStats {
     queryKey: ['daoStats'],
     enabled: isContractConfigured(),
     queryFn: async () => {
-      const [totalMembers, activeMembers, threshold, treasury, policy] =
+      const [totalMembers, activeMembers, threshold, treasury, policy, isPaused] =
         await Promise.all([
           daoRead.getTotalMembers(),
           daoRead.getActiveMembers(),
           daoRead.getConsensusThreshold(),
           daoRead.getTreasuryBalance(),
           daoRead.getLoanPolicy(),
+          daoRead.isPaused(),
         ])
-      return { totalMembers, activeMembers, threshold, treasury, policy }
+      return { totalMembers, activeMembers, threshold, treasury, policy, isPaused }
     },
   })
 
@@ -154,6 +156,7 @@ export function useDAOStats(): ExtendedStats {
     totalYieldGenerated: BigInt(0),
     totalRestaked: asBigInt(agg?.totalStaked),
     initialized: isContractConfigured() && data?.threshold != null,
+    isPaused: !!data?.isPaused,
     membershipFee,
     consensusThreshold: Number(data?.threshold ?? 0),
     // The Soroban port's native modules are always compiled in.
@@ -524,6 +527,16 @@ export function useAdminActions() {
   const setThreshold = (thresholdBps: number) =>
     run('Updating consensus threshold', (w) => w.setConsensusThreshold(thresholdBps))
   return { pause, unpause, addAdmin, removeAdmin, setThreshold, isPending, isSuccess, error }
+}
+
+/** The current admin set, read live from the contract. */
+export function useAdmins() {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['admins'],
+    enabled: isContractConfigured(),
+    queryFn: () => daoRead.getAdmins(),
+  })
+  return { admins: data ?? [], isLoading, refetch }
 }
 
 export interface AdminLogEntry {

@@ -177,6 +177,7 @@ export const daoRead = {
   getLoanPolicy: () => read<Record<string, unknown>>('get_loan_policy'),
   getToken: () => read<string>('get_token'),
   isPaused: () => read<boolean>('is_paused'),
+  getAdmins: () => read<string[]>('get_admins'),
   isMember: (addr: string) => read<boolean>('is_member', sc.addr(addr)),
   isAdmin: (addr: string) => read<boolean>('is_admin', sc.addr(addr)),
   isEligibleForLoan: (addr: string) =>
