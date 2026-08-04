@@ -7,6 +7,7 @@ import {
   loanStatusCode,
   mapLoanProposal,
   mapTreasuryProposal,
+  eventLabel,
 } from '@/hooks/useDAO'
 import { MemberStatus } from '@/types/dao'
 import type { BackendLoan } from '@/lib/backend'
@@ -173,5 +174,19 @@ describe('mapTreasuryProposal', () => {
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Executed' }).status).toBe(5)
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Rejected' }).status).toBe(4)
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Pending' }).status).toBe(2)
+  })
+})
+
+describe('eventLabel', () => {
+  it('maps a known symbol to its human-readable label', () => {
+    expect(eventLabel('loan_dflt')).toBe('Loan defaulted')
+    expect(eventLabel('loan_appr')).toBe('Loan approved')
+  })
+  it('falls back to the raw symbol for an unrecognized one', () => {
+    expect(eventLabel('some_new_symbol')).toBe('some_new_symbol')
+  })
+  it('falls back to "Unknown event" for an empty/missing symbol', () => {
+    expect(eventLabel(undefined)).toBe('Unknown event')
+    expect(eventLabel('')).toBe('Unknown event')
   })
 })
