@@ -7,7 +7,7 @@ import {
   EyeSlashIcon,
   LockClosedIcon,
   LockOpenIcon,
-  DownloadIcon,
+  ArrowDownTrayIcon,
   ShareIcon,
   XMarkIcon,
   ExclamationTriangleIcon
@@ -15,7 +15,7 @@ import {
 import { DocumentMetadata, downloadFromIPFS, getIPFSUrl, canAccessDocument } from '@/lib/ipfs'
 
 interface DocumentViewerProps {
-  document: DocumentMetadata
+  doc: DocumentMetadata
   userAddress: string
   userRoles?: string[]
   onClose?: () => void
@@ -24,7 +24,7 @@ interface DocumentViewerProps {
 }
 
 export default function DocumentViewer({
-  document,
+  doc,
   userAddress,
   userRoles = [],
   onClose,
@@ -40,17 +40,17 @@ export default function DocumentViewer({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   // Check if user has access
-  const hasAccess = canAccessDocument(document, userAddress, userRoles)
+  const hasAccess = canAccessDocument(doc, userAddress, userRoles)
 
   useEffect(() => {
-    if (hasAccess && !document.encrypted) {
+    if (hasAccess && !doc.encrypted) {
       loadDocument()
     }
-  }, [hasAccess, document.hash])
+  }, [hasAccess, doc.hash])
 
   const loadDocument = async (decryptPassword?: string) => {
     if (!hasAccess) {
-      setError('You do not have permission to view this document')
+      setError('You do not have permission to view this doc')
       return
     }
 
@@ -59,8 +59,8 @@ export default function DocumentViewer({
 
     try {
       const result = await downloadFromIPFS(
-        document.hash,
-        document.encrypted,
+        doc.hash,
+        doc.encrypted,
         decryptPassword
       )
 
@@ -69,12 +69,15 @@ export default function DocumentViewer({
 
       // Create preview URL for supported file types
       if (result.content) {
-        const blob = new Blob([result.content], { type: document.type })
+        // TS's Uint8Array is generic over its buffer type as of TS 5.7+;
+        // BlobPart requires an ArrayBuffer-backed one specifically, so copy
+        // into a fresh Uint8Array to satisfy that (no behavior change).
+        const blob = new Blob([new Uint8Array(result.content)], { type: doc.type })
         const url = URL.createObjectURL(blob)
         setPreviewUrl(url)
       }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load document'
+      const errorMsg = err instanceof Error ? err.message : 'Failed to load doc'
       setError(errorMsg)
       onError?.(errorMsg)
     } finally {
@@ -84,7 +87,7 @@ export default function DocumentViewer({
 
   const handleDecrypt = () => {
     if (!password.trim()) {
-      setError('Password is required to decrypt this document')
+      setError('Password is required to decrypt this doc')
       return
     }
     loadDocument(password)
@@ -93,11 +96,11 @@ export default function DocumentViewer({
   const downloadDocument = () => {
     if (!content) return
 
-    const blob = new Blob([content], { type: document.type })
+    const blob = new Blob([new Uint8Array(content)], { type: doc.type })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = document.name
+    link.download = doc.name
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -106,8 +109,8 @@ export default function DocumentViewer({
     if (navigator.share && previewUrl) {
       try {
         await navigator.share({
-          title: document.name,
-          text: `Document: ${document.name}`,
+          title: doc.name,
+          text: `Document: ${doc.name}`,
           url: previewUrl
         })
       } catch (err) {
@@ -120,7 +123,7 @@ export default function DocumentViewer({
   }
 
   const copyToClipboard = () => {
-    const url = getIPFSUrl(document.hash)
+    const url = getIPFSUrl(doc.hash)
     navigator.clipboard.writeText(url).then(() => {
       // Show success message
       const originalText = 'Share'
@@ -163,17 +166,17 @@ export default function DocumentViewer({
   const renderPreview = () => {
     if (!previewUrl || !content) return null
 
-    if (document.type.startsWith('image/')) {
+    if (doc.type.startsWith('image/')) {
       return (
         <img
           src={previewUrl}
-          alt={document.name}
+          alt={doc.name}
           className="max-w-full max-h-96 mx-auto rounded-lg shadow-lg"
         />
       )
     }
 
-    if (document.type.startsWith('text/')) {
+    if (doc.type.startsWith('text/')) {
       const text = new TextDecoder().decode(content)
       return (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 max-h-96 overflow-auto">
@@ -184,17 +187,17 @@ export default function DocumentViewer({
       )
     }
 
-    if (document.type.includes('pdf')) {
+    if (doc.type.includes('pdf')) {
       return (
         <iframe
           src={previewUrl}
           className="w-full h-96 rounded-lg border border-gray-300 dark:border-gray-600"
-          title={document.name}
+          title={doc.name}
         />
       )
     }
 
-    if (document.type.startsWith('video/')) {
+    if (doc.type.startsWith('video/')) {
       return (
         <video
           src={previewUrl}
@@ -206,7 +209,7 @@ export default function DocumentViewer({
       )
     }
 
-    if (document.type.startsWith('audio/')) {
+    if (doc.type.startsWith('audio/')) {
       return (
         <audio
           src={previewUrl}
@@ -250,15 +253,15 @@ export default function DocumentViewer({
       {/* Header */}
       <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <span className="text-2xl">{getFileIcon(document.type)}</span>
+          <span className="text-2xl">{getFileIcon(doc.type)}</span>
           <div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {document.name}
+              {doc.name}
             </h3>
             <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
-              <span>{formatFileSize(document.size)}</span>
-              <span>{document.uploadedAt.toLocaleDateString()}</span>
-              {document.encrypted && (
+              <span>{formatFileSize(doc.size)}</span>
+              <span>{doc.uploadedAt.toLocaleDateString()}</span>
+              {doc.encrypted && (
                 <div className="flex items-center space-x-1">
                   <LockClosedIcon className="h-4 w-4" />
                   <span>Encrypted</span>
@@ -275,7 +278,7 @@ export default function DocumentViewer({
                 className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 title="Download"
               >
-                <DownloadIcon className="h-5 w-5" />
+                <ArrowDownTrayIcon className="h-5 w-5" />
               </button>
               <button
                 onClick={shareDocument}
@@ -300,16 +303,16 @@ export default function DocumentViewer({
 
       <div className="p-6">
         {/* Encryption/Decryption Interface */}
-        {document.encrypted && !decrypted && (
+        {doc.encrypted && !decrypted && (
           <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="flex items-center space-x-2 mb-3">
               <LockClosedIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               <span className="font-medium text-blue-900 dark:text-blue-100">
-                This document is encrypted
+                This doc is encrypted
               </span>
             </div>
             <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
-              Enter the password to decrypt and view the document content.
+              Enter the password to decrypt and view the doc content.
             </p>
             <div className="flex space-x-2">
               <div className="relative flex-1">
@@ -382,7 +385,7 @@ export default function DocumentViewer({
         {/* Content preview */}
         {content && !loading && (
           <div className="space-y-4">
-            {canPreview(document.type) ? (
+            {canPreview(doc.type) ? (
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-900 dark:text-white">Preview</h4>
                 {renderPreview()}
@@ -411,30 +414,30 @@ export default function DocumentViewer({
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <dt className="font-medium text-gray-700 dark:text-gray-300">Type</dt>
-                <dd className="text-gray-600 dark:text-gray-400">{document.type || 'Unknown'}</dd>
+                <dd className="text-gray-600 dark:text-gray-400">{doc.type || 'Unknown'}</dd>
               </div>
               <div>
                 <dt className="font-medium text-gray-700 dark:text-gray-300">Size</dt>
-                <dd className="text-gray-600 dark:text-gray-400">{formatFileSize(document.size)}</dd>
+                <dd className="text-gray-600 dark:text-gray-400">{formatFileSize(doc.size)}</dd>
               </div>
               <div>
                 <dt className="font-medium text-gray-700 dark:text-gray-300">Uploaded</dt>
                 <dd className="text-gray-600 dark:text-gray-400">
-                  {document.uploadedAt.toLocaleString()}
+                  {doc.uploadedAt.toLocaleString()}
                 </dd>
               </div>
               <div>
                 <dt className="font-medium text-gray-700 dark:text-gray-300">IPFS Hash</dt>
                 <dd className="text-gray-600 dark:text-gray-400 font-mono text-xs break-all">
-                  {document.hash}
+                  {doc.hash}
                 </dd>
               </div>
-              {document.tags && document.tags.length > 0 && (
+              {doc.tags && doc.tags.length > 0 && (
                 <div className="col-span-2">
                   <dt className="font-medium text-gray-700 dark:text-gray-300">Tags</dt>
                   <dd className="text-gray-600 dark:text-gray-400">
                     <div className="flex flex-wrap gap-2 mt-1">
-                      {document.tags.map((tag, index) => (
+                      {doc.tags.map((tag, index) => (
                         <span
                           key={index}
                           className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
