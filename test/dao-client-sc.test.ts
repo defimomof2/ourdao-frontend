@@ -71,6 +71,8 @@ describe('policyToScVal', () => {
     maxInterestRate: 2_000,
     cooldownPeriod: 7 * 86_400,
     maxLoanToTreasuryRatio: 2_000,
+    defaultGracePeriod: 3 * 86_400,
+    defaultPenaltyBps: 2_000,
   }
 
   it('round-trips every field with the exact Rust field names and types', () => {
@@ -82,5 +84,7 @@ describe('policyToScVal', () => {
     expect(decoded.max_interest_rate).toBe(2_000)
     expect(decoded.cooldown_period).toBe(BigInt(7 * 86_400))
     expect(decoded.max_loan_to_treasury_ratio).toBe(2_000)
+    expect(decoded.default_grace_period).toBe(BigInt(3 * 86_400))
+    expect(decoded.default_penalty_bps).toBe(2_000)
   })
 })

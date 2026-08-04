@@ -57,6 +57,8 @@ export interface LoanPolicyInput {
   maxInterestRate: number
   cooldownPeriod: number | bigint
   maxLoanToTreasuryRatio: number
+  defaultGracePeriod: number | bigint
+  defaultPenaltyBps: number
 }
 
 export function policyToScVal(p: LoanPolicyInput): xdr.ScVal {
@@ -69,6 +71,8 @@ export function policyToScVal(p: LoanPolicyInput): xdr.ScVal {
       max_interest_rate: p.maxInterestRate,
       cooldown_period: BigInt(p.cooldownPeriod),
       max_loan_to_treasury_ratio: p.maxLoanToTreasuryRatio,
+      default_grace_period: BigInt(p.defaultGracePeriod),
+      default_penalty_bps: p.defaultPenaltyBps,
     },
     {
       type: {
@@ -79,6 +83,8 @@ export function policyToScVal(p: LoanPolicyInput): xdr.ScVal {
         max_interest_rate: ['symbol', 'u32'],
         cooldown_period: ['symbol', 'u64'],
         max_loan_to_treasury_ratio: ['symbol', 'u32'],
+        default_grace_period: ['symbol', 'u64'],
+        default_penalty_bps: ['symbol', 'u32'],
       },
     }
   )
@@ -228,6 +234,9 @@ export function daoWrite(
       send('vote_on_loan_proposal', sc.addr(address), sc.u32(proposalId), sc.bool(support)),
     repayLoan: (loanId: number) =>
       send('repay_loan', sc.addr(address), sc.u32(loanId)),
+    // Permissionless: the contract takes no caller argument (anyone can
+    // trigger this once a loan is overdue past its grace period).
+    markLoanDefaulted: (loanId: number) => send('mark_loan_defaulted', sc.u32(loanId)),
 
     proposeTreasuryWithdrawal: (
       amount: bigint | number,
