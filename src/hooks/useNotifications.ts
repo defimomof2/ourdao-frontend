@@ -1,10 +1,8 @@
 'use client'
 
 /**
- * Backend-backed replacements for the mock notification/activity hooks in
- * lib/eventListener.ts. Same return shapes, so NotificationCenter only needs to
- * swap its imports. Notifications are scoped to the connected wallet; the
- * activity feed is the DAO-wide indexed event stream.
+ * Backend-backed notification/activity hooks. Notifications are scoped to the
+ * connected wallet; the activity feed is the DAO-wide indexed event stream.
  *
  * Marking-as-read is persisted via the backend's mutation endpoints; removal
  * stays client-side only since there's no delete endpoint.
@@ -14,7 +12,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useWallet } from '@/lib/wallet'
 import { backend, type BackendEvent, type BackendNotification } from '@/lib/backend'
 import { formatStellarAddress } from '@/lib/stellar'
-import type { ActivityItem, NotificationData } from '@/lib/eventListener'
+import type { ActivityItem, NotificationData } from '@/lib/pushNotifications'
 
 const POLL_MS = 15_000
 

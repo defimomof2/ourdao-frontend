@@ -6,7 +6,7 @@ import {
   usePushNotifications,
   type NotificationData,
   type ActivityItem
-} from '@/lib/eventListener'
+} from '@/lib/pushNotifications'
 import { useIsMobile, useResponsiveModal } from '@/lib/responsive'
 import { 
   Bell, 
