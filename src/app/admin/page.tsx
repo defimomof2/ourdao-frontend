@@ -37,7 +37,7 @@ export default function AdminPage() {
     return (
       <AppShell>
         <GuardMessage
-          icon={<ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-4" />}
+          icon={<ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />}
           title="Wallet Not Connected"
           message="Please connect your wallet to access the admin panel."
         />
@@ -49,7 +49,7 @@ export default function AdminPage() {
     return (
       <AppShell>
         <GuardMessage
-          icon={<ExclamationTriangleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />}
+          icon={<ExclamationTriangleIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />}
           title="Access Denied"
           message="You need admin privileges to access this panel."
         />
@@ -119,19 +119,19 @@ function OverviewTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
     <div className="space-y-6">
       <div
         className={`rounded-lg p-6 border ${
-          stats.isPaused ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'
+          stats.isPaused ? 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900' : 'bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-900'
         }`}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-full ${stats.isPaused ? 'bg-red-100' : 'bg-green-100'}`}>
-              <ShieldCheckIcon className={`h-6 w-6 ${stats.isPaused ? 'text-red-600' : 'text-green-600'}`} />
+            <div className={`p-2 rounded-full ${stats.isPaused ? 'bg-red-100 dark:bg-red-900/40' : 'bg-green-100 dark:bg-green-900/40'}`}>
+              <ShieldCheckIcon className={`h-6 w-6 ${stats.isPaused ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
             </div>
             <div>
-              <h3 className={`text-lg font-semibold ${stats.isPaused ? 'text-red-900' : 'text-green-900'}`}>
+              <h3 className={`text-lg font-semibold ${stats.isPaused ? 'text-red-900 dark:text-red-300' : 'text-green-900 dark:text-green-300'}`}>
                 Contract is {stats.isPaused ? 'Paused' : 'Active'}
               </h3>
-              <p className={`text-sm ${stats.isPaused ? 'text-red-700' : 'text-green-700'}`}>
+              <p className={`text-sm ${stats.isPaused ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}>
                 {stats.isPaused
                   ? 'All state-changing operations are currently blocked on-chain.'
                   : 'Members can register, vote, and transact normally.'}
@@ -190,7 +190,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Admins ({admins.length})</h3>
         </div>
         <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {isLoading && <div className="px-6 py-4 text-sm text-gray-500">Loading…</div>}
+          {isLoading && <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
           {admins.map((addr) => (
             <div key={addr} className="px-6 py-3 flex items-center justify-between">
               <span className="font-mono text-sm text-gray-900 dark:text-white">{formatAddress(addr)}</span>
@@ -201,7 +201,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
                 }}
                 disabled={isPending || admins.length <= 1}
                 title={admins.length <= 1 ? 'Cannot remove the last admin' : 'Remove admin'}
-                className="flex items-center space-x-1 text-red-600 hover:text-red-800 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex items-center space-x-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <TrashIcon className="h-4 w-4" />
                 <span>Remove</span>
@@ -220,7 +220,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
           <button
             type="submit"
             disabled={isPending || !newAdmin.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Add Admin
           </button>
@@ -247,12 +247,12 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
           <button
             type="submit"
             disabled={isPending || !threshold}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             Update Threshold
           </button>
         </form>
-        {isSuccess && <p className="px-6 pb-4 text-sm text-green-600">Updated.</p>}
+        {isSuccess && <p className="px-6 pb-4 text-sm text-green-600 dark:text-green-400">Updated.</p>}
       </div>
     </div>
   )
@@ -272,7 +272,7 @@ function ActivityTab() {
         </p>
       </div>
       <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        {isLoading && <div className="px-6 py-4 text-sm text-gray-500">Loading…</div>}
+        {isLoading && <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
         {!isLoading && entries.length === 0 && (
           <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
             No admin/governance events indexed yet.
