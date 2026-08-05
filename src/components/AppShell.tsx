@@ -23,6 +23,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { ConnectButton } from '@/components/ConnectButton'
 import NotificationCenter from '@/components/NotificationCenter'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { useUserData } from '@/hooks/useDAO'
 import { isContractConfigured } from '@/lib/stellar'
 import { cn } from '@/lib/utils'
@@ -122,6 +123,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
           </button>
           <BrandMark />
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
+            <ThemeToggle />
             <NotificationCenter />
             <ConnectButton />
           </div>
