@@ -19,7 +19,7 @@ export default function PrivacyPage() {
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
-            <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+            <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
               Wallet Not Connected
             </h2>
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start space-x-4">
             <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
-              <EyeSlashIcon className="h-6 w-6 text-purple-600" />
+              <EyeSlashIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -59,7 +59,7 @@ export default function PrivacyPage() {
               </p>
               <Link
                 href="/governance/create"
-                className="inline-block mt-3 text-sm font-medium text-blue-600 hover:text-blue-800"
+                className="inline-block mt-3 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 Create a private treasury proposal →
               </Link>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start space-x-4">
             <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
-              <LockClosedIcon className="h-6 w-6 text-blue-600" />
+              <LockClosedIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -88,15 +88,15 @@ export default function PrivacyPage() {
 
         <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <ShieldCheckIcon className="h-5 w-5 text-gray-500" />
+            <ShieldCheckIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             Treasury proposal privacy, DAO-wide
           </h3>
           {isLoading ? (
-            <p className="text-sm text-gray-500">Loading…</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-2xl font-bold text-purple-600">{privateCount}</div>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{privateCount}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Private proposals</div>
               </div>
               <div>
