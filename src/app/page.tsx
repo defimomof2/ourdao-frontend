@@ -183,7 +183,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
-              🚀 Next Generation DeFi Lending
+              Next Generation DeFi Lending
             </Badge>
             
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
