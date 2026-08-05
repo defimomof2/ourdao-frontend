@@ -82,7 +82,7 @@ export default function DashboardPage() {
               )}
             </ConnectButton.Custom>
             <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                 ← Back to Home
               </Link>
             </div>
@@ -111,7 +111,7 @@ export default function DashboardPage() {
               </Link>
             </Button>
             <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 hover:text-gray-900">
+              <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
                 ← Back to Home
               </Link>
             </div>
@@ -128,47 +128,47 @@ export default function DashboardPage() {
       description: 'Submit a new loan proposal',
       icon: BanknotesIcon,
       href: '/loans/request',
-      color: 'text-green-600',
+      color: 'text-green-600 dark:text-green-400',
     },
     {
       title: 'View Loans',
       description: 'Browse and vote on loan proposals',
       icon: UsersIcon,
       href: '/loans',
-      color: 'text-blue-600',
+      color: 'text-blue-600 dark:text-blue-400',
     },
     {
       title: 'Governance',
       description: 'Vote on proposals and participate in DAO decisions',
       icon: ChartBarIcon,
       href: '/governance',
-      color: 'text-indigo-600',
+      color: 'text-indigo-600 dark:text-indigo-400',
     },
     {
       title: 'Treasury',
       description: 'View treasury status and restaking',
       icon: ChartBarIcon,
       href: '/treasury',
-      color: 'text-purple-600',
+      color: 'text-purple-600 dark:text-purple-400',
     },
     {
       title: 'Privacy Settings',
       description: 'Manage privacy preferences',
       icon: ShieldCheckIcon,
       href: '/privacy',
-      color: 'text-yellow-600',
+      color: 'text-yellow-600 dark:text-yellow-400',
     },
     ...(userData.member?.status === 3 ? [{
       title: 'Admin Panel',
       description: 'Manage DAO operations and configuration',
       icon: ShieldCheckIcon,
       href: '/admin',
-      color: 'text-red-600',
+      color: 'text-red-600 dark:text-red-400',
     }] : [])
   ]
 
-  const memberStatusColor = userData.member?.status === 1 ? 'text-green-600' : 'text-gray-600'
-  const memberStatusBg = userData.member?.status === 1 ? 'bg-green-50' : 'bg-gray-50'
+  const memberStatusColor = userData.member?.status === 1 ? 'text-green-600' : 'text-gray-600 dark:text-gray-400'
+  const memberStatusBg = userData.member?.status === 1 ? 'bg-green-50' : 'bg-gray-50 dark:bg-gray-800'
 
   return (
     <AppShell
@@ -185,21 +185,21 @@ export default function DashboardPage() {
                     <CheckCircleIcon className={`h-8 w-8 ${memberStatusColor}`} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {formatAddress(userData.address || '')}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       Status: {MEMBER_STATUS_LABELS[userData.member?.status || 0]}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Member since: {formatDate(userData.member?.joinDate || 0)}
                     </p>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-sm text-gray-600">Voting Weight</div>
-                  <div className="text-2xl font-bold text-gray-900">{userData.votingWeight}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Voting Weight</div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{userData.votingWeight}</div>
                 </div>
               </div>
             </CardContent>
@@ -214,12 +214,12 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-blue-50 mr-4">
-                      <CurrencyDollarIcon className="h-8 w-8 text-blue-600" />
+                    <div className="p-3 rounded-full bg-blue-50 dark:bg-blue-950/50 mr-4">
+                      <CurrencyDollarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Share Balance</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Share Balance</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
                         {formatEther(userData.member?.shareBalance || BigInt(0))} ETH
                       </p>
                     </div>
@@ -230,12 +230,12 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-green-50 mr-4">
-                      <TrophyIcon className="h-8 w-8 text-green-600" />
+                    <div className="p-3 rounded-full bg-green-50 dark:bg-green-950/50 mr-4">
+                      <TrophyIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Pending Rewards</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Rewards</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
                         {formatEther(userData.pendingRewards)} ETH
                       </p>
                     </div>
@@ -246,12 +246,12 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-purple-50 mr-4">
-                      <ChartBarIcon className="h-8 w-8 text-purple-600" />
+                    <div className="p-3 rounded-full bg-purple-50 dark:bg-purple-950/50 mr-4">
+                      <ChartBarIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Yield Available</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Yield Available</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
                         {formatEther(userData.pendingYield)} ETH
                       </p>
                     </div>
@@ -262,12 +262,12 @@ export default function DashboardPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center">
-                    <div className="p-3 rounded-full bg-yellow-50 mr-4">
-                      <BanknotesIcon className={`h-8 w-8 ${userData.hasActiveLoan ? 'text-red-600' : 'text-green-600'}`} />
+                    <div className="p-3 rounded-full bg-yellow-50 dark:bg-yellow-950/50 mr-4">
+                      <BanknotesIcon className={`h-8 w-8 ${userData.hasActiveLoan ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Loan</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Loan</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
                         {userData.hasActiveLoan ? 'Yes' : 'No'}
                       </p>
                     </div>
@@ -281,7 +281,7 @@ export default function DashboardPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <TrophyIcon className="h-5 w-5 text-yellow-600 mr-2" />
+                    <TrophyIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-2" />
                     Available Rewards
                   </CardTitle>
                   <CardDescription>
@@ -289,10 +289,10 @@ export default function DashboardPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
                     <div>
-                      <p className="font-medium text-green-900">Governance Rewards</p>
-                      <p className="text-sm text-green-700">{formatEther(userData.pendingRewards)} ETH</p>
+                      <p className="font-medium text-green-900 dark:text-green-300">Governance Rewards</p>
+                      <p className="text-sm text-green-700 dark:text-green-400">{formatEther(userData.pendingRewards)} ETH</p>
                     </div>
                     <Button 
                       onClick={handleClaimRewards} 
@@ -303,10 +303,10 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                   
-                  <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                     <div>
-                      <p className="font-medium text-purple-900">Restaking Yield</p>
-                      <p className="text-sm text-purple-700">{formatEther(userData.pendingYield)} ETH</p>
+                      <p className="font-medium text-purple-900 dark:text-purple-300">Restaking Yield</p>
+                      <p className="text-sm text-purple-700 dark:text-purple-400">{formatEther(userData.pendingYield)} ETH</p>
                     </div>
                     <Button 
                       onClick={handleClaimYield} 
@@ -335,14 +335,14 @@ export default function DashboardPage() {
                     const Icon = action.icon
                     return (
                       <Link key={action.title} href={action.href}>
-                        <div className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+                        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
                           <div className="flex items-start space-x-3">
                             <Icon className={`h-6 w-6 ${action.color} mt-1`} />
                             <div>
-                              <h3 className="font-medium text-gray-900">{action.title}</h3>
-                              <p className="text-sm text-gray-600">{action.description}</p>
+                              <h3 className="font-medium text-gray-900 dark:text-white">{action.title}</h3>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
                             </div>
-                            <ArrowUpRightIcon className="h-4 w-4 text-gray-400 ml-auto" />
+                            <ArrowUpRightIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 ml-auto" />
                           </div>
                         </div>
                       </Link>
@@ -363,19 +363,19 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Members</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Members</span>
                   <span className="font-medium">{stats.totalMembers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Active Members</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Active Members</span>
                   <span className="font-medium">{stats.activeMembers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Treasury Balance</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Treasury Balance</span>
                   <span className="font-medium">{formatEther(stats.treasuryBalance)} ETH</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Yield</span>
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Yield</span>
                   <span className="font-medium">{formatEther(stats.totalYieldGenerated)} ETH</span>
                 </div>
               </CardContent>
@@ -389,24 +389,24 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">ENS Voting</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.ensVoting ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">ENS Voting</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.ensVoting ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Document Storage</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.documentStorage ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Document Storage</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.documentStorage ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Private Voting</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.privateVoting ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Private Voting</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.privateVoting ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Confidential Loans</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.confidentialLoans ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Confidential Loans</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.confidentialLoans ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Restaking</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.restaking ? 'bg-green-500' : 'bg-gray-300'}`} />
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Restaking</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.restaking ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 </div>
               </CardContent>
             </Card>
@@ -423,12 +423,12 @@ export default function DashboardPage() {
                     {events.slice(0, 5).map((event, index) => (
                       <div key={index} className="flex items-center space-x-3 text-sm">
                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                        <span className="text-gray-600">{eventLabel(event?.symbol)}</span>
+                        <span className="text-gray-600 dark:text-gray-400">{eventLabel(event?.symbol)}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">No recent activity</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
                 )}
               </CardContent>
             </Card>
