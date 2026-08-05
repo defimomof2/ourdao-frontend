@@ -1,6 +1,7 @@
 # OurDAO Frontend
 
 [![CI](https://github.com/ourdao/ourdao-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/ourdao/ourdao-frontend/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 A [Next.js](https://nextjs.org) web app for the **OurDAO** member-owned lending DAO on **Stellar Soroban**.
 
@@ -9,6 +10,30 @@ This frontend was ported from an EVM stack (wagmi / RainbowKit / ethers) to Stel
 - **Wallet:** [Freighter](https://www.freighter.app/) via `@stellar/freighter-api`
 - **Chain access:** `@stellar/stellar-sdk` (Soroban RPC — simulate for reads, prepare/sign/submit for writes)
 - **Contract:** the [`ourdao-contracts`](https://github.com/ourdao/ourdao-contracts) Soroban DAO
+- **Off-chain data:** the [`ourdao-backend`](https://github.com/ourdao/ourdao-backend) indexer/API, for anything the contract itself keeps no queryable history of
+
+This repository is one of three that make up OurDAO:
+
+| Repo | Role |
+|---|---|
+| [`ourdao-contracts`](https://github.com/ourdao/ourdao-contracts) | The Soroban contract — the single source of truth for all DAO state |
+| [`ourdao-backend`](https://github.com/ourdao/ourdao-backend) | Off-chain indexer + read API |
+| **`ourdao-frontend`** (this repo) | Next.js web app members actually use |
+
+## Table of contents
+
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [Routes](#routes)
+- [Architecture](#architecture)
+- [Where the Stellar integration lives](#where-the-stellar-integration-lives)
+- [Theming](#theming)
+- [Scripts](#scripts)
+- [Testing](#testing)
+- [What's real vs. not](#whats-real-vs-not)
+- [Security notes](#security-notes)
+- [Roadmap](#roadmap)
+- [License](#license)
 
 ## Getting started
 
@@ -34,26 +59,64 @@ All config is env-driven with public-testnet defaults (see `.env.example`):
 
 Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/writes are disabled until you point it at a deployed contract. Without a reachable backend, everything backend-derived (loan history, notifications, activity/admin logs) degrades to empty rather than erroring — see `src/lib/backend.ts`.
 
+## Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Landing page — product overview, live DAO stats, wallet connect entry point. |
+| `/register` | Join the DAO (pays the membership fee via a real contract call). |
+| `/dashboard` | Member home: membership status, voting weight, pending yield, quick actions, DAO-wide stats, recent activity. |
+| `/loans` | Browse and vote on loan proposals. |
+| `/loans/request` | Multi-step loan request form. |
+| `/loans/[id]` | Loan detail — proposal vote state, and once approved, the real disbursed loan's status (Active/Repaid/Defaulted), due date, and a permissionless "Mark as Defaulted" action once overdue. |
+| `/governance` | Browse and vote on both loan and treasury proposals in one place. |
+| `/governance/create` | Create a treasury withdrawal proposal (optionally private, via commit-reveal). |
+| `/treasury` | Treasury balance, staking (stake/unstake for voting-weight boost), claimable yield. |
+| `/privacy` | What's actually private on-chain (commit-reveal voting, document encryption) and how to use it. |
+| `/admin` | Admin-only: pause/unpause, add/remove admins, set consensus threshold, governance audit log. |
+
+## Architecture
+
+```
+src/
+  app/            # Next.js App Router pages (one folder per route above)
+  components/     # Shared UI: AppShell (header/sidebar), ConnectButton, NotificationCenter,
+                  # ThemeToggle, DocumentUpload, and the shadcn/ui-derived primitives in ui/
+  hooks/          # useDAO.ts (contract reads/writes as React Query hooks),
+                  # useNotifications.ts (backend-polled notifications + activity feed),
+                  # useNow.ts (a useSyncExternalStore-based clock for countdown displays)
+  lib/            # stellar.ts, wallet.tsx, dao-client.ts, backend.ts, ipfs.ts, utils.ts
+  types/          # Shared TypeScript types
+```
+
+`AppShell` (header + sidebar navigation) is rendered by each page individually rather than being a Next.js `layout.tsx` — every page wraps its content in `<AppShell>` instead of hand-rolling its own chrome. The landing page and `/register` are the exceptions, with their own standalone headers since they're meant to work before a user has any DAO context.
+
+Data flows through [TanStack Query](https://tanstack.com/query) throughout: `useDAO.ts`'s hooks wrap live Soroban contract reads (the contract itself has no queryable lists, so proposal/loan enumeration counts come from the indexer, then each item is fetched live by id straight from the contract — the count is an off-chain hint, the data is always on-chain-sourced) and Freighter-signed writes; `useNotifications.ts` wraps the backend's polled REST endpoints.
+
 ## Where the Stellar integration lives
 
 | File | Role |
 |---|---|
 | `src/lib/stellar.ts` | Network config, RPC client, explorer URLs |
 | `src/lib/wallet.tsx` | Freighter connect/disconnect/sign context (`useWallet`) |
-| `src/lib/dao-client.ts` | Soroban read/invoke + typed wrappers for the contract's methods |
+| `src/lib/dao-client.ts` | Soroban read/invoke + typed wrappers for every contract method |
 | `src/components/ConnectButton.tsx` | Freighter-backed drop-in for the old RainbowKit button |
-| `src/hooks/useDAO.ts` | React-Query hooks the pages consume (unchanged surface) |
+| `src/hooks/useDAO.ts` | React Query hooks the pages consume |
 
 ## Theming
 
-Light/dark is handled by [`next-themes`](https://github.com/pacocoursey/next-themes) (`ThemeProvider` in `src/components/providers.tsx`, toggled via `src/components/ThemeToggle.tsx` in the header), following the system preference by default and persisting a manual choice in `localStorage`. Colors are Tailwind v4 `@theme` tokens defined in `src/app/globals.css` — a `.dark` class override block flips the semantic set (`background`, `foreground`, `card`, `muted`, `border`, etc.) that `src/components/ui/*` is built against. Note: those `ui/` primitives referenced this token set from the start, but the tokens themselves were never actually defined until this pass — `bg-card`, `text-muted-foreground`, and friends were silently unstyled before.
+Light/dark is handled by [`next-themes`](https://github.com/pacocoursey/next-themes) (`ThemeProvider` in `src/components/providers.tsx`, toggled via `src/components/ThemeToggle.tsx` in the header), following the system preference by default and persisting a manual choice in `localStorage`. Colors are Tailwind v4 `@theme` tokens defined in `src/app/globals.css` — a `.dark` class override block flips the semantic set (`background`, `foreground`, `card`, `muted`, `border`, etc.) that `src/components/ui/*` is built against.
+
+Two things worth knowing if you're touching styling:
+- Those `ui/` primitives referenced this token set from the start, but the tokens themselves were never actually defined until this was fixed — `bg-card`, `text-muted-foreground`, and friends were silently unstyled before.
+- `cn()` (`src/lib/utils.ts`) runs through [`tailwind-merge`](https://github.com/dcastil/tailwind-merge), not just `clsx` — this matters because a component's default variant classes (e.g. `Button`'s default `bg-primary`) and a caller's override classes (e.g. `bg-white`) will otherwise both compile to real CSS rules, and which one wins visually depends on Tailwind's generated stylesheet order rather than which class is written later. `tailwind-merge` resolves that by intent instead.
 
 ## Scripts
 
 ```bash
-npm run dev     # dev server (http://localhost:3000)
-npm run build   # production build
-npm start       # serve the production build
+npm run dev       # dev server (http://localhost:3000)
+npm run build     # production build
+npm start         # serve the production build
 npm run lint      # eslint
 npm run typecheck # tsc --noEmit
 npm test          # vitest
@@ -61,14 +124,33 @@ npm test          # vitest
 
 ## Testing
 
-Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage so far: `dao-client.ts`'s ScVal builders, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers, and `useNotifications.ts`'s hooks (mocking `@/lib/wallet` and `@/lib/backend`, rendered against a real `QueryClientProvider`). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`.
+Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage: `dao-client.ts`'s ScVal builders and `policyToScVal`, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers (including `mapLoan`, the real disbursed-loan mapper), `useNotifications.ts`'s hooks, and `useNow.ts`'s `useSyncExternalStore` contract (using fake timers, since the underlying bug it guards against — an infinite render loop — doesn't reproduce reliably just by rendering in jsdom). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`.
 
 ## What's real vs. not
 
-Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, admin actions (pause/unpause, add/remove admin, set consensus threshold), an admin/governance audit log, and loan defaults — `markLoanDefaulted` is exposed in `dao-client.ts`, and the dashboard's Recent Activity feed labels every real event (including `loan_dflt`) instead of the "Unknown event occurred" it showed for everything before. The loan detail page (`/loans/[id]`) reads the contract's real disbursed `Loan` (via `useLoan`) once a proposal is approved — actual status, due date, and outstanding balance, not the previous proposal-status guesswork that never reflected repayment or default. One known gap remains:
+Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, admin actions (pause/unpause, add/remove admin, set consensus threshold), an admin/governance audit log, and loan defaults — `markLoanDefaulted` is exposed in `dao-client.ts`, and the dashboard's Recent Activity feed labels every real event (including `loan_dflt`) instead of a generic placeholder. The loan detail page (`/loans/[id]`) reads the contract's real disbursed `Loan` (via `useLoan`) once a proposal is approved — actual status, due date, and outstanding balance, not proposal-status guesswork that never reflected repayment or default.
+
+One known gap remains:
 
 - **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
 
 `tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` still sets `typescript.ignoreBuildErrors` — safe to remove now, kept since the CI gate already covers it (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
 
-Running on Next.js 16 (Turbopack by default) + React 19.2. The Next 16 bump pulled in `eslint-plugin-react-hooks` v7, which added stricter React Compiler-oriented rules (`purity`, `immutability`, `set-state-in-effect`) that flag 13 pre-existing call sites — mostly `Date.now()` read during render and browser API state synced in `useEffect` instead of via `useSyncExternalStore`. None of these are new bugs and none were introduced by the upgrade; they're downgraded to warnings in `eslint.config.mjs` pending a proper cleanup pass.
+Running on Next.js 16 (Turbopack by default) + React 19.2.
+
+## Security notes
+
+- **No custody.** The frontend never holds a private key — every signature happens inside the Freighter extension, in the user's own browser context. `src/lib/wallet.tsx` only ever receives a signed transaction XDR back, never a key.
+- **Read-only degradation, not silent failure.** Without a configured contract id or a reachable backend, the UI runs in an explicit "not configured" / empty state rather than throwing — see [Configuration](#configuration).
+- **Error boundaries.** `error.tsx` (route-segment) and `global-error.tsx` (root-layout-level) catch uncaught render errors and offer a retry instead of the previous behavior, where any single uncaught error anywhere in the tree would take down the entire client-side app with no recovery short of a hard reload.
+- **Dependency hygiene.** A critical Next.js RCE and several other npm audit findings were patched; remaining findings are rooted entirely in `ipfs-http-client`'s dependency tree, tracked against the IPFS gap above rather than silently ignored.
+
+## Roadmap
+
+- Replace the dead IPFS/Infura endpoint with a real pinning provider.
+- Rework the loan detail page's data model so it derives loan/proposal state more directly (some legacy fields from the EVM port still shadow real on-chain data in places not yet fully migrated).
+- Convert `DocumentViewer.tsx`'s manual fetch-in-effect to React Query, matching the rest of the app's data-fetching convention (currently unused in the app, flagged rather than silently left as-is).
+
+## License
+
+MIT
