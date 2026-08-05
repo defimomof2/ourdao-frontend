@@ -242,10 +242,19 @@ export function useVoting() {
 
 export function useLoanRepayment() {
   const { run, isPending, isSuccess, error } = useWriteAction()
-  // Repayment amount is derived on-chain (full outstanding); arg kept for compat.
-  const repayLoan = (loanId: number, _amount?: bigint) =>
-    run('Repaying loan', (w) => w.repayLoan(loanId))
+  // repay_loan takes no amount argument — the contract always collects the
+  // full outstanding balance (total_repayment - amount_repaid) in one shot.
+  const repayLoan = (loanId: number) => run('Repaying loan', (w) => w.repayLoan(loanId))
   return { repayLoan, isPending, error, isSuccess }
+}
+
+export function useMarkLoanDefaulted() {
+  const { run, isPending, isSuccess, error } = useWriteAction()
+  // Permissionless: mark_loan_defaulted takes no caller argument, so this
+  // works even for a connected wallet that isn't the borrower or an admin.
+  const markLoanDefaulted = (loanId: number) =>
+    run('Marking loan defaulted', (w) => w.markLoanDefaulted(loanId))
+  return { markLoanDefaulted, isPending, error, isSuccess }
 }
 
 export function useRewards() {
@@ -416,6 +425,59 @@ export function useLoanProposal(id: number) {
     },
   })
   return { proposal: data ?? null, isLoading }
+}
+
+// ---------------------------------------------------------------------------
+// Disbursed loans
+//
+// A LoanProposal only tracks the vote; once approved, the contract disburses
+// a separate Loan record carrying the real repayment/due-date state (see
+// loans.rs::approve_and_disburse). The contract deliberately reuses the
+// proposal's own id for the loan, so `useLoan` and `useLoanProposal` for the
+// same id always refer to the same underlying request.
+// ---------------------------------------------------------------------------
+
+export interface UILoan {
+  id: number
+  borrower: string
+  principal: bigint
+  interestRate: number
+  totalRepayment: bigint
+  startTime: number
+  dueTime: number
+  status: 'Active' | 'Repaid' | 'Defaulted'
+  amountRepaid: bigint
+}
+
+export function mapLoan(raw: Record<string, unknown>): UILoan {
+  return {
+    id: Number(raw.id ?? 0),
+    borrower: String(raw.borrower ?? ''),
+    principal: asBigInt(raw.principal),
+    interestRate: Number(raw.interest_rate ?? 0),
+    totalRepayment: asBigInt(raw.total_repayment),
+    startTime: Number(raw.start_time ?? 0),
+    dueTime: Number(raw.due_time ?? 0),
+    status: tag(raw.status) as UILoan['status'],
+    amountRepaid: asBigInt(raw.amount_repaid),
+  }
+}
+
+/** The disbursed Loan for a given id, once its proposal has been approved.
+ *  `enabled` gates the fetch — pass whether the proposal is actually
+ *  Approved, since get_loan on a still-pending or rejected proposal id has
+ *  nothing to return. */
+export function useLoan(id: number, enabled: boolean) {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['loan', id],
+    enabled: isContractConfigured() && enabled && Number.isFinite(id) && id >= 0,
+    queryFn: async () => {
+      const raw = await daoRead.getLoan(id)
+      return raw ? mapLoan(raw) : null
+    },
+    refetchInterval: 15_000,
+  })
+  return { loan: data ?? null, isLoading, refetch }
 }
 
 export interface UITreasuryProposal {
