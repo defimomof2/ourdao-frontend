@@ -6,6 +6,12 @@ import { useEffect } from 'react'
  * Catches errors thrown by the root layout itself (outside what error.tsx
  * can reach, since error.tsx renders *inside* the layout). Must render its
  * own <html>/<body> — it fully replaces the root layout when active.
+ *
+ * That also means next-themes' script (which lives inside the normal
+ * layout tree) never runs here, so there's no reliable signal for a
+ * manually-chosen theme — only the OS-level prefers-color-scheme media
+ * query is available, handled below via plain CSS custom properties
+ * rather than Tailwind (which needs the .dark class this page can't set).
  */
 export default function GlobalError({
   error,
@@ -21,6 +27,24 @@ export default function GlobalError({
   return (
     <html lang="en">
       <body style={{ fontFamily: 'system-ui, sans-serif' }}>
+        <style>{`
+          :root {
+            --ge-bg: #f9fafb;
+            --ge-card-bg: #ffffff;
+            --ge-card-border: #e5e7eb;
+            --ge-heading: #111827;
+            --ge-body: #4b5563;
+          }
+          @media (prefers-color-scheme: dark) {
+            :root {
+              --ge-bg: #0a0e17;
+              --ge-card-bg: #111827;
+              --ge-card-border: #1f2937;
+              --ge-heading: #f3f4f6;
+              --ge-body: #9ca3af;
+            }
+          }
+        `}</style>
         <div
           style={{
             minHeight: '100vh',
@@ -28,7 +52,7 @@ export default function GlobalError({
             alignItems: 'center',
             justifyContent: 'center',
             padding: '1rem',
-            background: '#f9fafb',
+            background: 'var(--ge-bg)',
           }}
         >
           <div
@@ -36,17 +60,17 @@ export default function GlobalError({
               maxWidth: '28rem',
               width: '100%',
               borderRadius: '0.75rem',
-              border: '1px solid #e5e7eb',
-              background: 'white',
+              border: '1px solid var(--ge-card-border)',
+              background: 'var(--ge-card-bg)',
               padding: '1.5rem',
               textAlign: 'center',
               boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
             }}
           >
-            <h1 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827' }}>
+            <h1 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--ge-heading)' }}>
               Something went wrong
             </h1>
-            <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#4b5563' }}>
+            <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--ge-body)' }}>
               The app hit an unexpected error. Reloading usually fixes it.
             </p>
             <button
