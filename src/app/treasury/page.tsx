@@ -52,8 +52,8 @@ function StatCard({
           <Icon className="h-6 w-6" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="truncate text-xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+          <p className="truncate text-xl font-bold text-gray-900 dark:text-white">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -76,11 +76,11 @@ export default function TreasuryPage() {
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-6 text-center">
-              <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900">
+              <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 Connect Your Wallet
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Please connect your wallet to access the treasury.
               </p>
             </CardContent>
@@ -125,25 +125,25 @@ export default function TreasuryPage() {
           label="Treasury Balance"
           value={formatToken(stats.treasuryBalance)}
           icon={BuildingLibraryIcon}
-          tint="bg-primary-50 text-primary-600"
+          tint="bg-primary-50 text-primary-600 dark:bg-primary-950/50 dark:text-primary-400"
         />
         <StatCard
           label="Total Staked"
           value={formatToken(stats.totalRestaked)}
           icon={LockClosedIcon}
-          tint="bg-emerald-50 text-emerald-600"
+          tint="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
         />
         <StatCard
           label="Your Stake"
           value={formatToken(myStake)}
           icon={ArrowTrendingUpIcon}
-          tint="bg-amber-50 text-amber-600"
+          tint="bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
         />
         <StatCard
           label="Pending Yield"
           value={formatToken(userData.pendingYield)}
           icon={GiftIcon}
-          tint="bg-fuchsia-50 text-fuchsia-600"
+          tint="bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/50 dark:text-fuchsia-400"
         />
       </div>
 
@@ -152,17 +152,17 @@ export default function TreasuryPage() {
         <Card className="lg:col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <LockClosedIcon className="h-5 w-5 text-emerald-600" />
+              <LockClosedIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               Staking
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               Stake tokens to boost your voting weight. Staked funds are held
               separately from the treasury and can be withdrawn at any time.
             </p>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Amount
               </label>
               <input
@@ -174,7 +174,7 @@ export default function TreasuryPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
                 disabled={!userData.isMember || staking}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 dark:disabled:bg-gray-800"
               />
             </div>
             <div className="flex gap-2">
@@ -197,7 +197,7 @@ export default function TreasuryPage() {
               </Button>
             </div>
             {!userData.isMember && (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
                 You must be a DAO member to stake.
               </p>
             )}
@@ -208,7 +208,7 @@ export default function TreasuryPage() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BanknotesIcon className="h-5 w-5 text-primary-600" />
+              <BanknotesIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
               Treasury Withdrawals
             </CardTitle>
           </CardHeader>
@@ -221,27 +221,27 @@ export default function TreasuryPage() {
               </div>
             ) : proposals.length === 0 ? (
               <div className="py-10 text-center">
-                <BanknotesIcon className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-                <p className="text-gray-600">No treasury withdrawals yet.</p>
+                <BanknotesIcon className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-gray-600" />
+                <p className="text-gray-600 dark:text-gray-400">No treasury withdrawals yet.</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                 {proposals.map((p) => (
                   <li key={p.id} className="py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900">{p.title}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{p.title}</p>
                           {p.isPrivate && (
                             <Badge variant="secondary" className="text-xs">
                               Private
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500">
+                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                           {formatToken(p.amount)} → {formatAddress(p.recipient)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400">
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
@@ -265,7 +265,7 @@ export default function TreasuryPage() {
                               disabled={voting}
                               onClick={() => voteOnTreasury(p.id, true)}
                             >
-                              <CheckIcon className="h-4 w-4 text-emerald-600" />
+                              <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                             </Button>
                             <Button
                               size="sm"
@@ -273,7 +273,7 @@ export default function TreasuryPage() {
                               disabled={voting}
                               onClick={() => voteOnTreasury(p.id, false)}
                             >
-                              <XMarkIcon className="h-4 w-4 text-red-600" />
+                              <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
                             </Button>
                           </div>
                         )}
