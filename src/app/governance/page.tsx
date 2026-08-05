@@ -51,10 +51,10 @@ function VoteButtons({
   return (
     <div className="flex gap-1">
       <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(true)}>
-        <CheckIcon className="h-4 w-4 text-emerald-600" />
+        <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
       </Button>
       <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(false)}>
-        <XMarkIcon className="h-4 w-4 text-red-600" />
+        <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
       </Button>
     </div>
   )
@@ -63,8 +63,8 @@ function VoteButtons({
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="py-12 text-center">
-      <DocumentTextIcon className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-      <p className="text-gray-600">{label}</p>
+      <DocumentTextIcon className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-gray-600" />
+      <p className="text-gray-600 dark:text-gray-400">{label}</p>
     </div>
   )
 }
@@ -97,8 +97,8 @@ function StatCard({
           <Icon className="h-6 w-6" />
         </div>
         <div>
-          <p className="text-sm text-gray-600">{label}</p>
-          <p className="text-xl font-bold text-gray-900">{value}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+          <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -120,11 +120,11 @@ export default function GovernancePage() {
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-6 text-center">
-              <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900">
+              <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-500" />
+              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
                 Connect Your Wallet
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Please connect your wallet to access governance.
               </p>
             </CardContent>
@@ -160,25 +160,25 @@ export default function GovernancePage() {
           label="Total Members"
           value={stats.totalMembers}
           icon={UsersIcon}
-          tint="bg-primary-50 text-primary-600"
+          tint="bg-primary-50 text-primary-600 dark:bg-primary-950/50 dark:text-primary-400"
         />
         <StatCard
           label="Active Members"
           value={stats.activeMembers}
           icon={UserGroupIcon}
-          tint="bg-emerald-50 text-emerald-600"
+          tint="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
         />
         <StatCard
           label="Consensus Threshold"
           value={`${thresholdPct}%`}
           icon={ScaleIcon}
-          tint="bg-amber-50 text-amber-600"
+          tint="bg-amber-50 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"
         />
         <StatCard
           label="Open Proposals"
           value={openProposals}
           icon={DocumentTextIcon}
-          tint="bg-fuchsia-50 text-fuchsia-600"
+          tint="bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/50 dark:text-fuchsia-400"
         />
       </div>
 
@@ -193,7 +193,7 @@ export default function GovernancePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BanknotesIcon className="h-5 w-5 text-primary-600" />
+                <BanknotesIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 Loan Proposals
               </CardTitle>
             </CardHeader>
@@ -203,21 +203,21 @@ export default function GovernancePage() {
               ) : loanProposals.length === 0 ? (
                 <EmptyState label="No loan proposals yet." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                   {loanProposals.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
                       <div className="min-w-0">
                         <Link
                           href={`/loans/${p.id}`}
-                          className="font-medium text-gray-900 hover:text-primary-700"
+                          className="font-medium text-gray-900 dark:text-white hover:text-primary-700 dark:hover:text-primary-400"
                         >
                           Loan Proposal #{p.id}
                         </Link>
-                        <p className="mt-0.5 text-sm text-gray-500">
+                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                           {formatToken(p.amount)} · {(p.interestRate / 100).toFixed(1)}% ·{' '}
                           {formatAddress(p.borrower)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400">
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
@@ -243,7 +243,7 @@ export default function GovernancePage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BanknotesIcon className="h-5 w-5 text-primary-600" />
+                <BanknotesIcon className="h-5 w-5 text-primary-600 dark:text-primary-400" />
                 Treasury Withdrawals
               </CardTitle>
             </CardHeader>
@@ -253,22 +253,22 @@ export default function GovernancePage() {
               ) : treasuryProposals.length === 0 ? (
                 <EmptyState label="No treasury withdrawals yet." />
               ) : (
-                <ul className="divide-y divide-gray-100">
+                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
                   {treasuryProposals.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900">{p.title}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{p.title}</p>
                           {p.isPrivate && (
                             <Badge variant="secondary" className="text-xs">
                               Private
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500">
+                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
                           {formatToken(p.amount)} → {formatAddress(p.recipient)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400">
+                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
