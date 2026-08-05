@@ -26,6 +26,7 @@ import {
 import { useDAOStats, useUserData, useDAOEvents } from '@/hooks/useDAO'
 import { formatToken } from '@/lib/utils'
 import NotificationCenter from '@/components/NotificationCenter'
+import { OrbitMark } from '@/components/OrbitMark'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { useState } from 'react'
 
@@ -90,11 +91,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500">
-                <svg viewBox="0 0 512 512" className="h-6 w-6" fill="#eef2ff" aria-hidden="true">
-                  <polygon points="256,106 297.01,214.99 406,256 297.01,297.01 256,406 214.99,297.01 106,256 214.99,214.99" />
-                </svg>
-              </div>
+              <OrbitMark className="h-11 w-11" />
               <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300 transition-colors">
                 OurDAO
               </Link>
@@ -186,6 +183,10 @@ export default function Home() {
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-indigo-950/40 dark:to-gray-950">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
+            <div className="mb-8 flex justify-center">
+              <OrbitMark className="h-24 w-24 sm:h-28 sm:w-28" />
+            </div>
+
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
               Next Generation DeFi Lending
             </Badge>
@@ -461,11 +462,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500">
-                    <svg viewBox="0 0 512 512" className="h-6 w-6" fill="#eef2ff" aria-hidden="true">
-                      <polygon points="256,106 297.01,214.99 406,256 297.01,297.01 256,406 214.99,297.01 106,256 214.99,214.99" />
-                    </svg>
-                  </div>
+                  <OrbitMark className="h-11 w-11" />
                   <h3 className="text-xl font-bold text-white">OurDAO</h3>
                 </div>
                 <p className="text-base leading-relaxed text-gray-400 mb-6 max-w-md">
