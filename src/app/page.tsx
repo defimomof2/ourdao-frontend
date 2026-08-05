@@ -26,6 +26,7 @@ import {
 import { useDAOStats, useUserData, useDAOEvents } from '@/hooks/useDAO'
 import { formatToken } from '@/lib/utils'
 import NotificationCenter from '@/components/NotificationCenter'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { useState } from 'react'
 
 export default function Home() {
@@ -83,36 +84,36 @@ export default function Home() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100">
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-100 dark:bg-gray-950/90 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600">
                 <span className="text-lg font-bold text-white">O</span>
               </div>
-              <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors">
+              <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300 transition-colors">
                 OurDAO
               </Link>
             </div>
-            
+
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/loans" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/loans" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                 Loans
               </Link>
-              <Link href="/governance" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/governance" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                 Governance
               </Link>
-              <Link href="/treasury" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/treasury" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                 Treasury
               </Link>
-              <Link href="/privacy" className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link href="/privacy" className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                 Privacy
               </Link>
             </nav>
-            
+
             <div className="flex items-center space-x-4">
               {userData.isConnected && userData.isMember && (
                 <>
@@ -124,11 +125,12 @@ export default function Home() {
                   <NotificationCenter />
                 </>
               )}
+              <ThemeToggle />
               <ConnectButton />
-              
+
               {/* Mobile menu button */}
               <button
-                className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500"
+                className="md:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
@@ -143,32 +145,32 @@ export default function Home() {
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100">
+          <div className="md:hidden border-t border-gray-100 dark:border-gray-800">
             <div className="space-y-1 px-4 pb-3 pt-2">
               <Link
                 href="/loans"
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Loans
               </Link>
               <Link
                 href="/governance"
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Governance
               </Link>
               <Link
                 href="/treasury"
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Treasury
               </Link>
               <Link
                 href="/privacy"
-                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900"
+                className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Privacy
@@ -179,22 +181,22 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-indigo-950/40 dark:to-gray-950">
         <div className="mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
             <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm font-medium">
               Next Generation DeFi Lending
             </Badge>
-            
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
+
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl lg:text-7xl">
               The Future of{' '}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
                 Decentralized Lending
               </span>
             </h1>
-            
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 sm:text-xl">
-              Join the most advanced peer-to-peer lending DAO with privacy features, 
+
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-400 sm:text-xl">
+              Join the most advanced peer-to-peer lending DAO with privacy features,
               automated governance, and yield generation through staking.
             </p>
             
@@ -247,48 +249,48 @@ export default function Home() {
 
       {/* Stats Section */}
       {stats.initialized && (
-        <section className="py-16 bg-white border-b border-gray-100">
+        <section className="py-16 bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-2xl text-center mb-12">
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl mb-3">
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl mb-3">
                 Our Impact in Numbers
               </h2>
-              <p className="text-lg text-gray-600 mx-auto">
+              <p className="text-lg text-gray-600 dark:text-gray-400 mx-auto">
                 Driving decentralized finance forward through community-powered lending.
               </p>
             </div>
-            
+
             <dl className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
               <div className="flex flex-col items-center">
-                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50">
-                  <Users className="h-8 w-8 text-primary-600" aria-hidden="true" />
+                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-950/50">
+                  <Users className="h-8 w-8 text-primary-600 dark:text-primary-400" aria-hidden="true" />
                 </div>
-                <dt className="text-4xl font-bold text-primary-600">{stats.totalMembers}</dt>
-                <dd className="mt-2 text-base font-medium text-gray-600">Total Members</dd>
+                <dt className="text-4xl font-bold text-primary-600 dark:text-primary-400">{stats.totalMembers}</dt>
+                <dd className="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">Total Members</dd>
               </div>
-              
+
               <div className="flex flex-col items-center">
-                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-                  <Shield className="h-8 w-8 text-green-600" aria-hidden="true" />
+                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-50 dark:bg-green-950/50">
+                  <Shield className="h-8 w-8 text-green-600 dark:text-green-400" aria-hidden="true" />
                 </div>
-                <dt className="text-4xl font-bold text-green-600">{stats.activeMembers}</dt>
-                <dd className="mt-2 text-base font-medium text-gray-600">Active Members</dd>
+                <dt className="text-4xl font-bold text-green-600 dark:text-green-400">{stats.activeMembers}</dt>
+                <dd className="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">Active Members</dd>
               </div>
-              
+
               <div className="flex flex-col items-center">
-                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50">
-                  <BarChart3 className="h-8 w-8 text-blue-600" aria-hidden="true" />
+                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/50">
+                  <BarChart3 className="h-8 w-8 text-blue-600 dark:text-blue-400" aria-hidden="true" />
                 </div>
-                <dt className="text-4xl font-bold text-blue-600">{formatToken(stats.treasuryBalance)}</dt>
-                <dd className="mt-2 text-base font-medium text-gray-600">Treasury Balance</dd>
+                <dt className="text-4xl font-bold text-blue-600 dark:text-blue-400">{formatToken(stats.treasuryBalance)}</dt>
+                <dd className="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">Treasury Balance</dd>
               </div>
-              
+
               <div className="flex flex-col items-center">
-                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-orange-50">
-                  <CreditCard className="h-8 w-8 text-orange-600" aria-hidden="true" />
+                <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-orange-50 dark:bg-orange-950/50">
+                  <CreditCard className="h-8 w-8 text-orange-600 dark:text-orange-400" aria-hidden="true" />
                 </div>
-                <dt className="text-4xl font-bold text-orange-600">{stats.totalLoans}</dt>
-                <dd className="mt-2 text-base font-medium text-gray-600">Loans Funded</dd>
+                <dt className="text-4xl font-bold text-orange-600 dark:text-orange-400">{stats.totalLoans}</dt>
+                <dd className="mt-2 text-base font-medium text-gray-600 dark:text-gray-400">Loans Funded</dd>
               </div>
             </dl>
           </div>
@@ -296,15 +298,15 @@ export default function Home() {
       )}
 
       {/* About Section */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-white dark:bg-gray-950">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
               <Badge className="mb-6 px-3 py-1" variant="secondary">About OurDAO</Badge>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 mb-6">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
                 Redefining Trustless, Private Lending
               </h2>
-              <p className="text-lg text-gray-600 leading-relaxed mb-8">
+              <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed mb-8">
                 OurDAO is a privacy-first, decentralized lending protocol built for communities.
                 We combine trustless smart contracts, encrypted document storage, zero-knowledge voting,
                 and real-time transparency to deliver a best-in-class experience for borrowers and lenders.
@@ -312,8 +314,8 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 mb-10">
                 {benefits.map((item) => (
                   <div key={item} className="flex items-center space-x-3">
-                    <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
-                    <span className="text-base text-gray-700">{item}</span>
+                    <Check className="h-5 w-5 flex-shrink-0 text-green-500 dark:text-green-400" />
+                    <span className="text-base text-gray-700 dark:text-gray-300">{item}</span>
                   </div>
                 ))}
               </div>
@@ -334,13 +336,13 @@ export default function Home() {
               {features.slice(0,4).map((f) => {
                 const Icon = f.icon
                 return (
-                  <Card key={f.name} className="border-gray-200 hover:shadow-md transition-shadow">
+                  <Card key={f.name} className="border-gray-200 dark:border-gray-800 hover:shadow-md transition-shadow">
                     <CardContent className="p-6">
                       <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${f.gradient} mb-4 flex items-center justify-center text-white`}>
                         <Icon className="w-6 h-6" />
                       </div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-2">{f.name}</h4>
-                      <p className="text-sm leading-relaxed text-gray-600">{f.description}</p>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{f.name}</h4>
+                      <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400">{f.description}</p>
                     </CardContent>
                   </Card>
                 )
@@ -351,32 +353,32 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-24 bg-gray-50 dark:bg-gray-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <Badge variant="secondary" className="mb-3">Our Platform</Badge>
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl mb-6">
+            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl lg:text-5xl mb-6">
               Advanced Features for Modern DeFi
             </h2>
-            <p className="text-xl leading-8 text-gray-600 mx-auto">
-              Built with cutting-edge technology to provide the most comprehensive 
+            <p className="text-xl leading-8 text-gray-600 dark:text-gray-400 mx-auto">
+              Built with cutting-edge technology to provide the most comprehensive
               and secure lending experience in DeFi.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-10">
             {features.map((feature) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.name} className="border border-gray-200 hover:shadow-xl transition-all duration-300 h-full">
+                <Card key={feature.name} className="border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-all duration-300 h-full">
                   <CardHeader className="pb-2">
                     <div className={`w-14 h-14 rounded-xl bg-gradient-to-r ${feature.gradient} mb-6 flex items-center justify-center text-white shadow-sm`}>
                       <Icon className="w-7 h-7" />
                     </div>
-                    <CardTitle className="text-xl font-bold mb-2">{feature.name}</CardTitle>
+                    <CardTitle className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{feature.name}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-base text-gray-600 leading-relaxed">
+                    <CardDescription className="text-base text-gray-600 dark:text-gray-400 leading-relaxed">
                       {feature.description}
                     </CardDescription>
                   </CardContent>
