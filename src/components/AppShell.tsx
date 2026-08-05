@@ -51,8 +51,10 @@ function isActive(pathname: string, href: string): boolean {
 function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary-600 to-primary-500 text-sm font-bold text-white shadow-sm">
-        O
+      <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-primary-600 to-primary-500 shadow-sm">
+        <svg viewBox="0 0 512 512" className="h-5 w-5" fill="#eef2ff" aria-hidden="true">
+          <polygon points="256,106 297.01,214.99 406,256 297.01,297.01 256,406 214.99,297.01 106,256 214.99,214.99" />
+        </svg>
       </span>
       <span className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
         OurDAO

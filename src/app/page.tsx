@@ -90,8 +90,10 @@ export default function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600">
-                <span className="text-lg font-bold text-white">O</span>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500">
+                <svg viewBox="0 0 512 512" className="h-6 w-6" fill="#eef2ff" aria-hidden="true">
+                  <polygon points="256,106 297.01,214.99 406,256 297.01,297.01 256,406 214.99,297.01 106,256 214.99,214.99" />
+                </svg>
               </div>
               <Link href="/" className="text-xl font-bold text-gray-900 hover:text-gray-700 dark:text-white dark:hover:text-gray-300 transition-colors">
                 OurDAO
@@ -459,8 +461,10 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
               <div className="col-span-1 md:col-span-2">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600">
-                    <span className="text-lg font-bold text-white">O</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500">
+                    <svg viewBox="0 0 512 512" className="h-6 w-6" fill="#eef2ff" aria-hidden="true">
+                      <polygon points="256,106 297.01,214.99 406,256 297.01,297.01 256,406 214.99,297.01 106,256 214.99,214.99" />
+                    </svg>
                   </div>
                   <h3 className="text-xl font-bold text-white">OurDAO</h3>
                 </div>
