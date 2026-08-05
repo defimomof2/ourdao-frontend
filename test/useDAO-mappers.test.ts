@@ -7,6 +7,7 @@ import {
   loanStatusCode,
   mapLoanProposal,
   mapTreasuryProposal,
+  mapLoan,
   eventLabel,
 } from '@/hooks/useDAO'
 import { MemberStatus } from '@/types/dao'
@@ -158,6 +159,33 @@ describe('mapLoanProposal', () => {
     expect(p.votingEndTime).toBe(1000 + 7 * 24 * 60 * 60)
     expect(p.status).toBe(2)
     expect(p.votesFor).toBe(2)
+  })
+})
+
+describe('mapLoan', () => {
+  it('maps the real Loan struct fields, including status as a string tag', () => {
+    const l = mapLoan({
+      id: 1,
+      borrower: 'GBORROWER',
+      principal: BigInt(1000),
+      interest_rate: 500,
+      total_repayment: BigInt(1100),
+      start_time: 100,
+      due_time: 100 + 30 * 24 * 60 * 60,
+      status: 'Active',
+      amount_repaid: BigInt(0),
+    })
+    expect(l.id).toBe(1)
+    expect(l.borrower).toBe('GBORROWER')
+    expect(l.principal).toBe(BigInt(1000))
+    expect(l.totalRepayment).toBe(BigInt(1100))
+    expect(l.dueTime).toBe(100 + 30 * 24 * 60 * 60)
+    expect(l.status).toBe('Active')
+  })
+
+  it('handles a Soroban unit-enum status decoded as a one-element array', () => {
+    const l = mapLoan({ status: ['Defaulted'] })
+    expect(l.status).toBe('Defaulted')
   })
 })
 
