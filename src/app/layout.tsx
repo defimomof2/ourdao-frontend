@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     "mobile-web-app-capable": "yes",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "msapplication-TileColor": "#667eea",
+    "msapplication-TileColor": "#4f46e5",
     "msapplication-config": "/browserconfig.xml"
   }
 }

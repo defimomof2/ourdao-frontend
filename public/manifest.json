@@ -1,11 +1,11 @@
 {
-  "name": "UnifiedLendingDAO",
-  "short_name": "ULD",
+  "name": "OurDAO",
+  "short_name": "OurDAO",
   "description": "Decentralized peer-to-peer lending DAO with privacy features and yield generation",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#667eea",
+  "theme_color": "#4f46e5",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
