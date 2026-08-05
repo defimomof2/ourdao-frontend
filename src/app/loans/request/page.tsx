@@ -62,9 +62,19 @@ export default function RequestLoanPage() {
   
   const [step, setStep] = useState(1)
   const maxSteps = 4 // Added document upload step
-  const [estimatedInterest, setEstimatedInterest] = useState(0)
   const [uploadedDocuments, setUploadedDocuments] = useState<DocumentMetadata[]>([])
   const [showDocumentUpload, setShowDocumentUpload] = useState(false)
+
+  // Estimated interest is derived from the amount, not synced state — no
+  // effect needed, it's just recomputed on every render.
+  const estimatedInterest = (() => {
+    if (!formData.amount) return 0
+    const amount = parseFloat(formData.amount)
+    // Simple interest calculation - in real app this would come from contract
+    const baseRate = 8 // 8% base rate
+    const riskMultiplier = amount > 10 ? 1.2 : 1.0 // Higher amounts = higher risk
+    return baseRate * riskMultiplier
+  })()
 
   useEffect(() => {
     if (!userData.isConnected) {
@@ -86,17 +96,6 @@ export default function RequestLoanPage() {
       toast.error('Failed to submit loan request. Please try again.')
     }
   }, [error])
-
-  // Calculate estimated interest based on amount
-  useEffect(() => {
-    if (formData.amount) {
-      const amount = parseFloat(formData.amount)
-      // Simple interest calculation - in real app this would come from contract
-      const baseRate = 8 // 8% base rate
-      const riskMultiplier = amount > 10 ? 1.2 : 1.0 // Higher amounts = higher risk
-      setEstimatedInterest(baseRate * riskMultiplier)
-    }
-  }, [formData.amount])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
