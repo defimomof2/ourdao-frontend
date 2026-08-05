@@ -431,10 +431,10 @@ export default function Home() {
                       </Button>
                     )}
                   </ConnectButton.Custom>
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 px-8 py-3 text-base font-semibold"
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full sm:w-auto bg-transparent border-white/30 text-white hover:bg-white/10 px-8 py-3 text-base font-semibold"
                   >
                     Learn More
                   </Button>

@@ -1,7 +1,14 @@
 import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
 
+// clsx alone only concatenates — it doesn't know that e.g. bg-white and
+// bg-primary conflict, so which one visually wins depends on Tailwind's
+// generated stylesheet order, not on which is later in the className
+// string. twMerge resolves same-property conflicts by source order
+// instead, so a caller's override classes reliably win over a component's
+// own defaults (e.g. Button's default variant bg-primary/text-primary-foreground).
 export function cn(...inputs: ClassValue[]) {
-  return clsx(inputs)
+  return twMerge(clsx(inputs))
 }
 
 // Format ethereum values from wei to readable format
