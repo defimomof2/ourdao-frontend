@@ -6,33 +6,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import {
-  ArrowLeftIcon,
-  BanknotesIcon,
   ClockIcon,
   CheckCircleIcon,
   XCircleIcon,
   EyeIcon,
-  EyeSlashIcon,
   DocumentTextIcon,
-  UserIcon,
   CalendarIcon,
   CurrencyDollarIcon,
   ChartBarIcon,
   ExclamationTriangleIcon,
   HandThumbUpIcon,
   HandThumbDownIcon,
-  ShareIcon,
 } from '@heroicons/react/24/outline'
 import {
   useUserData,
+  useDAOStats,
   useVoting,
   useLoanRepayment,
   useLoanProposal,
+  useLoan,
+  useMarkLoanDefaulted,
   useProposalDocument,
   useAttachDocument,
+  type UILoan,
 } from '@/hooks/useDAO'
 import { useNow } from '@/hooks/useNow'
-import { formatEther, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
+import { formatToken, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS, IPFS_GATEWAY } from '@/constants'
 import toast from 'react-hot-toast'
 import { AppShell } from '@/components/AppShell'
@@ -41,45 +40,31 @@ export default function LoanDetailsPage() {
   const params = useParams()
   const router = useRouter()
   const userData = useUserData()
+  const { activeMembers } = useDAOStats()
   const { voteOnProposal, isPending: isVoting } = useVoting()
   const { repayLoan, isPending: isRepaying } = useLoanRepayment()
+  const { markLoanDefaulted, isPending: isMarkingDefaulted } = useMarkLoanDefaulted()
   const now = useNow()
-  
+
   const loanId = parseInt(params.id as string)
   const { proposal, isLoading } = useLoanProposal(loanId)
+  // A LoanProposal only tracks the vote; the real disbursed Loan (due date,
+  // repayment status) exists once the proposal is Approved (status 3), and
+  // the contract guarantees it carries the same id as the proposal.
+  const { loan: realLoan, isLoading: loanLoading, refetch: refetchLoan } = useLoan(
+    loanId,
+    proposal?.status === 3
+  )
   const { cid: documentCid, refetch: refetchDocument } = useProposalDocument('Loan', loanId)
   const { attach, isPending: attaching } = useAttachDocument()
   const [cidInput, setCidInput] = useState('')
-  // The contract stores the proposal core; borrower profile, history and
-  // documents aren't on-chain, so they default to empty until an indexer or
-  // attached document supplies them.
-  const loan = proposal
-    ? {
-        ...proposal,
-        totalVotingPower: proposal.votesFor + proposal.votesAgainst,
-        editEndTime: proposal.votingStartTime,
-        isRepaid: proposal.status === 5,
-        borrowerProfile: {
-          reputation: 0,
-          totalLoans: 0,
-          completedLoans: 0,
-          defaultedLoans: 0,
-          averageRepaymentTime: '—',
-          memberSince: 0,
-        },
-        loanHistory: [] as { action: string; timestamp: number; details: string }[],
-      }
-    : null
-
-  const [showRepayment, setShowRepayment] = useState(false)
-  const [repaymentAmount, setRepaymentAmount] = useState('')
 
   useEffect(() => {
-    if (!loan) {
+    if (!isLoading && !proposal) {
       toast.error('Loan not found')
       router.push('/loans')
     }
-  }, [loan, router])
+  }, [isLoading, proposal, router])
 
   if (isLoading) {
     return (
@@ -91,7 +76,7 @@ export default function LoanDetailsPage() {
     )
   }
 
-  if (!loan) {
+  if (!proposal) {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -121,20 +106,23 @@ export default function LoanDetailsPage() {
   }
 
   const handleRepayment = async () => {
-    if (!repaymentAmount || parseFloat(repaymentAmount) <= 0) {
-      toast.error('Please enter a valid repayment amount')
-      return
-    }
-
     try {
-      // Convert ETH string to wei (bigint)
-      const amountInWei = BigInt(Math.floor(parseFloat(repaymentAmount) * 1e18))
-      await repayLoan(loanId, amountInWei)
+      await repayLoan(loanId)
       toast.success('Loan repayment successful')
-      setShowRepayment(false)
     } catch (error) {
       console.error('Repayment failed:', error)
       toast.error('Failed to process repayment')
+    }
+  }
+
+  const handleMarkDefaulted = async () => {
+    try {
+      await markLoanDefaulted(loanId)
+      toast.success('Loan marked as defaulted')
+      refetchLoan()
+    } catch (error) {
+      console.error('Mark defaulted failed:', error)
+      toast.error('Failed to mark loan as defaulted')
     }
   }
 
@@ -158,37 +146,48 @@ export default function LoanDetailsPage() {
     }
   }
 
+  const loanStatusClass = (status: UILoan['status']) => {
+    switch (status) {
+      case 'Active': return 'text-blue-700 bg-blue-50 border-blue-200'
+      case 'Repaid': return 'text-green-700 bg-green-50 border-green-200'
+      case 'Defaulted': return 'text-red-700 bg-red-50 border-red-200'
+    }
+  }
+
   const canVote = () => {
     return now !== null &&
            userData.isMember &&
-           loan.status === 2 &&
-           !loan.hasVoted &&
-           loan.borrower !== userData.address &&
-           loan.votingEndTime > Math.floor(now / 1000)
+           proposal.status === 2 &&
+           !proposal.hasVoted &&
+           proposal.borrower !== userData.address &&
+           proposal.votingEndTime > Math.floor(now / 1000)
   }
 
   const isBorrower = () => {
-    return userData.address?.toLowerCase() === loan.borrower.toLowerCase()
+    return userData.address?.toLowerCase() === proposal.borrower.toLowerCase()
   }
 
-  const votingProgress = calculatePercentage(loan.votesFor, loan.votesFor + loan.votesAgainst)
-  const quorumProgress = calculatePercentage(loan.votesFor + loan.votesAgainst, loan.totalVotingPower)
+  const isOverdue =
+    realLoan?.status === 'Active' && now !== null && Math.floor(now / 1000) > realLoan.dueTime
+
+  const outstanding = realLoan ? realLoan.totalRepayment - realLoan.amountRepaid : BigInt(0)
+
+  const votingProgress = calculatePercentage(proposal.votesFor, proposal.votesFor + proposal.votesAgainst)
+  const totalVotes = proposal.votesFor + proposal.votesAgainst
+  // Approximates participation against active member headcount (vote
+  // weight can exceed 1/member via staking bonuses, so this can overshoot
+  // 100% for a heavily-staked electorate — clamped below for the bar width).
+  const quorumProgress = calculatePercentage(totalVotes, activeMembers)
 
   return (
     <AppShell
-      title={`Loan Proposal #${loan.id}`}
+      title={`Loan Proposal #${proposal.id}`}
       actions={
-        <div className="flex items-center gap-2">
-          <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(loan.status)}`}>
-            <div className="flex items-center space-x-1">
-              {getStatusIcon(loan.status)}
-              <span>{PROPOSAL_STATUS_LABELS[loan.status as keyof typeof PROPOSAL_STATUS_LABELS]}</span>
-            </div>
+        <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(proposal.status)}`}>
+          <div className="flex items-center space-x-1">
+            {getStatusIcon(proposal.status)}
+            <span>{PROPOSAL_STATUS_LABELS[proposal.status as keyof typeof PROPOSAL_STATUS_LABELS]}</span>
           </div>
-          <Button variant="outline" size="sm">
-            <ShareIcon className="h-4 w-4 mr-2" />
-            Share
-          </Button>
         </div>
       }
     >
@@ -206,36 +205,32 @@ export default function LoanDetailsPage() {
                   <div className="text-center p-4 bg-blue-50 rounded-lg">
                     <CurrencyDollarIcon className="h-8 w-8 text-blue-600 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Amount</p>
-                    <p className="text-xl font-bold text-gray-900">
-                      {loan.isPrivate ? 'Private' : `${formatEther(loan.amount)} ETH`}
-                    </p>
+                    <p className="text-xl font-bold text-gray-900">{formatToken(proposal.amount)}</p>
                   </div>
                   <div className="text-center p-4 bg-purple-50 rounded-lg">
                     <ChartBarIcon className="h-8 w-8 text-purple-600 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Interest Rate</p>
-                    <p className="text-xl font-bold text-gray-900">{(loan.interestRate / 100).toFixed(2)}%</p>
+                    <p className="text-xl font-bold text-gray-900">{(proposal.interestRate / 100).toFixed(2)}%</p>
                   </div>
                   <div className="text-center p-4 bg-green-50 rounded-lg">
                     <HandThumbUpIcon className="h-8 w-8 text-green-600 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Votes For</p>
-                    <p className="text-xl font-bold text-green-600">{loan.votesFor}</p>
+                    <p className="text-xl font-bold text-green-600">{proposal.votesFor}</p>
                   </div>
                   <div className="text-center p-4 bg-red-50 rounded-lg">
                     <HandThumbDownIcon className="h-8 w-8 text-red-600 mx-auto mb-2" />
                     <p className="text-sm text-gray-600">Votes Against</p>
-                    <p className="text-xl font-bold text-red-600">{loan.votesAgainst}</p>
+                    <p className="text-xl font-bold text-red-600">{proposal.votesAgainst}</p>
                   </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Purpose</h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    {loan.isPrivate ? 'This is a private loan. Details are only visible to the borrower and approved members.' : loan.purpose}
-                  </p>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Borrower</span>
+                  <span className="font-medium text-gray-900">{formatAddress(proposal.borrower)}</span>
                 </div>
 
                 {/* Voting Progress */}
-                {loan.status === 2 && (
+                {proposal.status === 2 && (
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
@@ -243,7 +238,7 @@ export default function LoanDetailsPage() {
                         <span>{votingProgress}% in favor</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-3">
-                        <div 
+                        <div
                           className="bg-green-500 h-3 rounded-full transition-all"
                           style={{ width: `${votingProgress}%` }}
                         />
@@ -256,9 +251,9 @@ export default function LoanDetailsPage() {
                         <span>{quorumProgress}% participation</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-blue-500 h-2 rounded-full transition-all"
-                          style={{ width: `${quorumProgress}%` }}
+                          style={{ width: `${Math.min(quorumProgress, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -268,9 +263,9 @@ export default function LoanDetailsPage() {
                         Voting ends in:{' '}
                         {now === null
                           ? '…'
-                          : `${Math.ceil((loan.votingEndTime - Math.floor(now / 1000)) / 86400)} days`}
+                          : `${Math.ceil((proposal.votingEndTime - Math.floor(now / 1000)) / 86400)} days`}
                       </span>
-                      <span>Total votes: {loan.votesFor + loan.votesAgainst}</span>
+                      <span>Total votes: {totalVotes}</span>
                     </div>
                   </div>
                 )}
@@ -310,54 +305,92 @@ export default function LoanDetailsPage() {
               </Card>
             )}
 
+            {/* Real disbursed-loan status, once approved */}
+            {proposal.status === 3 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Loan Status</CardTitle>
+                  <CardDescription>
+                    The disbursed loan&apos;s real on-chain state — separate from
+                    the proposal above, which only tracked the vote.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {loanLoading || !realLoan ? (
+                    <div className="skeleton h-24 w-full rounded-lg" />
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Status</span>
+                        <span className={`px-3 py-1 rounded-full border text-sm font-medium ${loanStatusClass(realLoan.status)}`}>
+                          {realLoan.status}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Principal</p>
+                          <p className="font-medium text-gray-900">{formatToken(realLoan.principal)}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Total Repayment</p>
+                          <p className="font-medium text-gray-900">{formatToken(realLoan.totalRepayment)}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Repaid So Far</p>
+                          <p className="font-medium text-gray-900">{formatToken(realLoan.amountRepaid)}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Due</p>
+                          <p className={`font-medium ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
+                            {formatDate(realLoan.dueTime)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {isOverdue && (
+                        <div className="pt-4 border-t border-gray-200">
+                          <div className="flex items-start gap-2 mb-3">
+                            <ExclamationTriangleIcon className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                            <p className="text-sm text-gray-700">
+                              This loan is past its due date. Anyone can mark
+                              it defaulted, which slashes a policy-defined
+                              share of the borrower&apos;s treasury claim.
+                            </p>
+                          </div>
+                          <Button
+                            onClick={handleMarkDefaulted}
+                            disabled={isMarkingDefaulted}
+                            variant="outline"
+                            className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                          >
+                            {isMarkingDefaulted ? 'Processing...' : 'Mark as Defaulted'}
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             {/* Loan Repayment for Borrower */}
-            {isBorrower() && loan.status === 3 && !loan.isRepaid && (
+            {isBorrower() && realLoan?.status === 'Active' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Loan Repayment</CardTitle>
                   <CardDescription>
-                    Your loan has been approved. You can make repayments here.
+                    Repayment is always the full outstanding balance — the
+                    contract doesn&apos;t support partial repayments.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {!showRepayment ? (
-                    <Button onClick={() => setShowRepayment(true)} className="w-full">
-                      Make Repayment
-                    </Button>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Repayment Amount (ETH)
-                        </label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          placeholder="0.00"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                          value={repaymentAmount}
-                          onChange={(e) => setRepaymentAmount(e.target.value)}
-                        />
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={handleRepayment}
-                          disabled={isRepaying}
-                          className="flex-1"
-                        >
-                          {isRepaying ? 'Processing...' : 'Confirm Repayment'}
-                        </Button>
-                        <Button
-                          onClick={() => setShowRepayment(false)}
-                          variant="outline"
-                          className="flex-1"
-                        >
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-600">Outstanding balance</span>
+                    <span className="text-lg font-semibold text-gray-900">{formatToken(outstanding)}</span>
+                  </div>
+                  <Button onClick={handleRepayment} disabled={isRepaying} className="w-full">
+                    {isRepaying ? 'Processing...' : 'Repay Full Outstanding Balance'}
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -428,76 +461,11 @@ export default function LoanDetailsPage() {
                 )}
               </CardContent>
             </Card>
-
-            {/* Loan History */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Loan History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {loan.loanHistory.map((event, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                      <div>
-                        <p className="font-medium text-gray-900">{event.action}</p>
-                        <p className="text-sm text-gray-600">{event.details}</p>
-                        <p className="text-xs text-gray-500 mt-1">{formatDate(event.timestamp)}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Borrower Profile */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <UserIcon className="h-5 w-5 mr-2" />
-                  Borrower Profile
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center pb-4 border-b">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <span className="text-white font-bold text-xl">
-                      {loan.borrower.substring(2, 4).toUpperCase()}
-                    </span>
-                  </div>
-                  <p className="font-medium text-gray-900">{formatAddress(loan.borrower)}</p>
-                  <p className="text-sm text-gray-600">Member since {formatDate(loan.borrowerProfile.memberSince)}</p>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Reputation Score</span>
-                    <span className="font-medium text-green-600">{loan.borrowerProfile.reputation}/100</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Total Loans</span>
-                    <span className="font-medium">{loan.borrowerProfile.totalLoans}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Completed</span>
-                    <span className="font-medium text-green-600">{loan.borrowerProfile.completedLoans}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Defaulted</span>
-                    <span className="font-medium text-red-600">{loan.borrowerProfile.defaultedLoans}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600">Avg. Repayment</span>
-                    <span className="font-medium">{loan.borrowerProfile.averageRepaymentTime}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Loan Timeline */}
+            {/* Proposal Timeline */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -508,42 +476,30 @@ export default function LoanDetailsPage() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-600">Created</span>
-                  <span className="font-medium">{formatDate(loan.creationTime)}</span>
+                  <span className="font-medium">{formatDate(proposal.creationTime)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-600">Editing Ended</span>
-                  <span className="font-medium">{formatDate(loan.editEndTime)}</span>
-                </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-gray-600">Voting Started</span>
-                  <span className="font-medium">{formatDate(loan.votingStartTime)}</span>
+                  <span className="font-medium">{formatDate(proposal.votingStartTime)}</span>
                 </div>
                 <div className="flex justify-between items-center text-sm">
                   <span className="text-gray-600">Voting Ends</span>
-                  <span className="font-medium">{formatDate(loan.votingEndTime)}</span>
+                  <span className="font-medium">{formatDate(proposal.votingEndTime)}</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Risk Assessment */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-                  Risk Assessment
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm font-medium text-green-800">Low Risk</p>
-                  <p className="text-xs text-green-600">Borrower has excellent repayment history</p>
-                </div>
-                <div className="text-xs text-gray-600 space-y-1">
-                  <p>• Established member with good reputation</p>
-                  <p>• No previous loan defaults</p>
-                  <p>• Reasonable loan amount for stated purpose</p>
-                  <p>• Supporting documentation provided</p>
-                </div>
+                {realLoan && (
+                  <>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Disbursed</span>
+                      <span className="font-medium">{formatDate(realLoan.startTime)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Due</span>
+                      <span className={`font-medium ${isOverdue ? 'text-red-600' : ''}`}>
+                        {formatDate(realLoan.dueTime)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
