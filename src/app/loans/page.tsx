@@ -83,25 +83,25 @@ export default function LoansPage() {
   const getStatusIcon = (status: number) => {
     switch (status) {
       case 1: // IN_EDITING
-        return <Clock className="h-5 w-5 text-yellow-500" />
+        return <Clock className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
       case 2: // IN_VOTING
-        return <Clock className="h-5 w-5 text-blue-500" />
+        return <Clock className="h-5 w-5 text-blue-500 dark:text-blue-400" />
       case 3: // APPROVED
-        return <CheckCircle className="h-5 w-5 text-green-500" />
+        return <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
       case 4: // REJECTED
-        return <XCircle className="h-5 w-5 text-red-500" />
+        return <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />
       default:
-        return <Clock className="h-5 w-5 text-gray-500" />
+        return <Clock className="h-5 w-5 text-gray-500 dark:text-gray-400" />
     }
   }
 
   const getStatusColor = (status: number) => {
     switch (status) {
-      case 1: return 'text-yellow-600 bg-yellow-50 border-yellow-200'
-      case 2: return 'text-blue-600 bg-blue-50 border-blue-200'
-      case 3: return 'text-green-600 bg-green-50 border-green-200'
-      case 4: return 'text-red-600 bg-red-50 border-red-200'
-      default: return 'text-gray-600 bg-gray-50 border-gray-200'
+      case 1: return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950/30 dark:border-yellow-900'
+      case 2: return 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/30 dark:border-blue-900'
+      case 3: return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900'
+      case 4: return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/30 dark:border-red-900'
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
     }
   }
 
@@ -131,19 +131,19 @@ export default function LoansPage() {
     >
       <div>
         {/* Filters */}
-        <Card className="mb-12 border border-gray-200 shadow-sm">
+        <Card className="mb-12 border border-gray-200 dark:border-gray-700 shadow-sm">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-lg font-semibold">
-              <Filter className="mr-2 h-5 w-5 text-gray-600" />
+              <Filter className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
               Filter & Search
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Status</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                 <select
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                   value={filters.status}
                   onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
                 >
@@ -156,9 +156,9 @@ export default function LoansPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Privacy</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Privacy</label>
                 <select
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                   value={filters.privacy}
                   onChange={(e) => setFilters(prev => ({ ...prev, privacy: e.target.value }))}
                 >
@@ -169,13 +169,13 @@ export default function LoansPage() {
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-medium text-gray-700">Search</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Search</label>
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     placeholder="Search by purpose or borrower address..."
-                    className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 pl-10 pr-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-colors"
                     value={filters.search}
                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                   />
@@ -188,33 +188,33 @@ export default function LoansPage() {
         {/* Statistics */}
         <div className="mb-12">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Overview</h2>
-            <p className="text-sm text-gray-600 mt-1">Current lending activity and proposal statistics</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Overview</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Current lending activity and proposal statistics</p>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+            <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 mr-4">
-                    <Banknote className="h-6 w-6 text-blue-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950/50 mr-4">
+                    <Banknote className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Proposals</p>
-                    <p className="text-2xl font-bold text-gray-900">{proposals.length}</p>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Proposals</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{proposals.length}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+            <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 mr-4">
-                    <Clock className="h-6 w-6 text-yellow-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 dark:bg-yellow-950/50 mr-4">
+                    <Clock className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">In Voting</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">In Voting</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {proposals.filter(p => p.status === 2).length}
                     </p>
                   </div>
@@ -222,15 +222,15 @@ export default function LoansPage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+            <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 mr-4">
-                    <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/50 mr-4">
+                    <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Approved</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Approved</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {proposals.filter(p => p.status === 3).length}
                     </p>
                   </div>
@@ -238,15 +238,15 @@ export default function LoansPage() {
               </CardContent>
             </Card>
 
-            <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+            <Card className="border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 mr-4">
-                    <EyeOff className="h-6 w-6 text-purple-600" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/50 mr-4">
+                    <EyeOff className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Private</p>
-                    <p className="text-2xl font-bold text-gray-900">
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Private</p>
+                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
                       {proposals.filter(p => p.isPrivate).length}
                     </p>
                   </div>
@@ -273,9 +273,9 @@ export default function LoansPage() {
           ) : filteredProposals.length === 0 ? (
             <Card>
               <CardContent className="p-12 text-center">
-                <Banknote className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No proposals found</h3>
-                <p className="text-gray-600">
+                <Banknote className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No proposals found</h3>
+                <p className="text-gray-600 dark:text-gray-400">
                   {filters.status !== 'all' || filters.privacy !== 'all' || filters.search
                     ? 'Try adjusting your filters to see more proposals.'
                     : 'Be the first to request a loan!'}
@@ -298,12 +298,12 @@ export default function LoansPage() {
                           </CardTitle>
                           {proposal.isPrivate && (
                             <span title="Private Loan">
-                              <EyeOff className="h-4 w-4 text-purple-600" />
+                              <EyeOff className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                             </span>
                           )}
                           {proposal.documentHash && (
                             <span title="Has Documents">
-                              <FileText className="h-4 w-4 text-blue-600" />
+                              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                             </span>
                           )}
                         </div>
@@ -321,28 +321,28 @@ export default function LoansPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div>
-                      <p className="text-sm text-gray-600">Amount Requested</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Amount Requested</p>
                       <p className="font-semibold">
                         {proposal.isPrivate ? 'Private' : `${formatEther(proposal.amount)} ETH`}
                       </p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Interest Rate</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Interest Rate</p>
                       <p className="font-semibold">{(proposal.interestRate / 100).toFixed(2)}% APR</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Votes For</p>
-                      <p className="font-semibold text-green-600">{proposal.votesFor}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Votes For</p>
+                      <p className="font-semibold text-green-600 dark:text-green-400">{proposal.votesFor}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-600">Votes Against</p>
-                      <p className="font-semibold text-red-600">{proposal.votesAgainst}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Votes Against</p>
+                      <p className="font-semibold text-red-600 dark:text-red-400">{proposal.votesAgainst}</p>
                     </div>
                   </div>
 
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Purpose</p>
-                    <p className="text-gray-900">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Purpose</p>
+                    <p className="text-gray-900 dark:text-white">
                       {proposal.isPrivate ? 'Details are private' : proposal.purpose}
                     </p>
                   </div>
@@ -350,7 +350,7 @@ export default function LoansPage() {
                   {/* Voting Progress */}
                   {proposal.status === 2 && (
                     <div>
-                      <div className="flex justify-between text-sm text-gray-600 mb-2">
+                      <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                         <span>Voting Progress</span>
                         <span>
                           {proposal.votesFor + proposal.votesAgainst} votes •{' '}
@@ -397,7 +397,7 @@ export default function LoansPage() {
                           variant="outline"
                           onClick={() => handleVote(proposal.id, false)}
                           disabled={isPending}
-                          className="text-red-600 border-red-300 hover:bg-red-50"
+                          className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
                         >
                           Vote Against
                         </Button>
@@ -413,8 +413,8 @@ export default function LoansPage() {
                     )}
 
                     {proposal.hasVoted && (
-                      <div className="text-sm text-gray-600 flex items-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                      <div className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 mr-1" />
                         You have voted
                       </div>
                     )}
