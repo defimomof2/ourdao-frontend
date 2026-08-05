@@ -243,7 +243,7 @@ export default function DocumentUpload({
                 </div>
                 <button
                   onClick={() => removeFile(index)}
-                  className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <XMarkIcon className="h-4 w-4" />
                 </button>
@@ -263,7 +263,7 @@ export default function DocumentUpload({
               checked={encrypt}
               onChange={(e) => setEncrypt(e.target.checked)}
               disabled={requireEncryption}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50"
             />
             <label htmlFor="encrypt" className="flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white">
               <LockClosedIcon className="h-4 w-4" />
@@ -288,9 +288,9 @@ export default function DocumentUpload({
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                    <EyeSlashIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   ) : (
-                    <EyeIcon className="h-4 w-4 text-gray-400" />
+                    <EyeIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
                   )}
                 </button>
               </div>
@@ -313,7 +313,7 @@ export default function DocumentUpload({
               id="public"
               checked={permissions.public}
               onChange={(e) => setPermissions(prev => ({ ...prev, public: e.target.checked }))}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
             />
             <label htmlFor="public" className="text-sm text-gray-900 dark:text-white">
               Allow public access (with password)
@@ -350,7 +350,7 @@ export default function DocumentUpload({
                     {user.slice(0, 8)}...
                     <button
                       onClick={() => removeAllowedUser(user)}
-                      className="ml-1 text-blue-600 hover:text-blue-800"
+                      className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       <XMarkIcon className="h-3 w-3" />
                     </button>
@@ -395,7 +395,7 @@ export default function DocumentUpload({
                     {role}
                     <button
                       onClick={() => removeAllowedRole(role)}
-                      className="ml-1 text-green-600 hover:text-green-800"
+                      className="ml-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
                     >
                       <XMarkIcon className="h-3 w-3" />
                     </button>
