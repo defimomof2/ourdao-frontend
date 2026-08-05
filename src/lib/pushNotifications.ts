@@ -70,9 +70,17 @@ export const usePushNotifications = () => {
   const requestPermission = useCallback(async () => {
     if (!supported) return false
 
-    const result = await Notification.requestPermission()
-    notifyPermissionChange()
-    return result === 'granted'
+    try {
+      // Browsers may reject this outright (not a DOMException resolve) when
+      // it isn't called from within a user gesture (e.g. a click handler) —
+      // callers should only invoke this from one.
+      const result = await Notification.requestPermission()
+      notifyPermissionChange()
+      return result === 'granted'
+    } catch (err) {
+      console.warn('Notification permission request failed:', err)
+      return false
+    }
   }, [supported])
 
   const sendNotification = useCallback(

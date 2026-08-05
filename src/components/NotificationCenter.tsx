@@ -54,7 +54,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
   } = useAutoNotifications()
 
   const { activities } = useActivityFeed(50)
-  const { supported, permission, requestPermission: requestPushPermission } = usePushNotifications()
+  const { supported, permission } = usePushNotifications()
 
   // Auto-start listening when component mounts
   useEffect(() => {
@@ -62,13 +62,6 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
       startListening()
     }
   }, [isListening, autoNotifyEnabled, startListening])
-
-  // Request notification permissions on first interaction
-  useEffect(() => {
-    if (supported && permission === 'default') {
-      requestPushPermission()
-    }
-  }, [supported, permission, requestPushPermission])
 
   const filteredNotifications = notifications.filter(notif => 
     filter === 'all' || !notif.read

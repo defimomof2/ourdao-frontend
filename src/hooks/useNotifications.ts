@@ -89,7 +89,11 @@ export function useAutoNotifications() {
 
   const requestPermission = useCallback(async () => {
     if ('Notification' in window && Notification.permission === 'default') {
-      await Notification.requestPermission()
+      try {
+        await Notification.requestPermission()
+      } catch (err) {
+        console.warn('Notification permission request failed:', err)
+      }
     }
   }, [])
 
