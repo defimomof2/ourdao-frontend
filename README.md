@@ -44,6 +44,10 @@ Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/
 | `src/components/ConnectButton.tsx` | Freighter-backed drop-in for the old RainbowKit button |
 | `src/hooks/useDAO.ts` | React-Query hooks the pages consume (unchanged surface) |
 
+## Theming
+
+Light/dark is handled by [`next-themes`](https://github.com/pacocoursey/next-themes) (`ThemeProvider` in `src/components/providers.tsx`, toggled via `src/components/ThemeToggle.tsx` in the header), following the system preference by default and persisting a manual choice in `localStorage`. Colors are Tailwind v4 `@theme` tokens defined in `src/app/globals.css` — a `.dark` class override block flips the semantic set (`background`, `foreground`, `card`, `muted`, `border`, etc.) that `src/components/ui/*` is built against. Note: those `ui/` primitives referenced this token set from the start, but the tokens themselves were never actually defined until this pass — `bg-card`, `text-muted-foreground`, and friends were silently unstyled before.
+
 ## Scripts
 
 ```bash
