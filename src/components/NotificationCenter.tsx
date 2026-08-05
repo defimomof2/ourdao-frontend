@@ -80,12 +80,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
     return <Icon className="w-4 h-4" />
   }
 
+  // Only the dot's bg color is actually used (see the split(' ')[1] call
+  // below) — a solid mid-tone so the dot reads clearly in both themes.
   const getNotificationTypeColor = (type: NotificationData['type']) => {
     const colorMap = {
-      info: 'text-blue-600 bg-blue-50 border-blue-200',
-      success: 'text-green-600 bg-green-50 border-green-200',
-      warning: 'text-yellow-600 bg-yellow-50 border-yellow-200',
-      error: 'text-red-600 bg-red-50 border-red-200'
+      info: 'text-blue-600 bg-blue-500 border-blue-200',
+      success: 'text-green-600 bg-green-500 border-green-200',
+      warning: 'text-yellow-600 bg-yellow-500 border-yellow-200',
+      error: 'text-red-600 bg-red-500 border-red-200'
     }
     return colorMap[type] || colorMap.info
   }
@@ -109,7 +111,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
       {/* Notification Bell Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 transition-colors"
+        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         title="Notifications"
       >
         <Bell className="w-6 h-6" />
@@ -130,27 +132,27 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
           />
           
           {/* Panel */}
-          <div className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-2 ${isMobile ? 'w-screen' : 'w-96'} bg-white ${isMobile ? 'rounded-t-xl' : 'rounded-xl'} shadow-xl border z-50 ${isMobile ? 'max-h-screen' : 'max-h-96'} flex flex-col`}>
+          <div className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-2 ${isMobile ? 'w-screen' : 'w-96'} bg-white dark:bg-gray-900 ${isMobile ? 'rounded-t-xl' : 'rounded-xl'} shadow-xl border border-gray-200 dark:border-gray-700 z-50 ${isMobile ? 'max-h-screen' : 'max-h-96'} flex flex-col`}>
             {/* Header */}
-            <div className="p-4 border-b">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold">Notifications</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-gray-100 rounded"
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Tabs */}
-              <div className="flex space-x-1 bg-gray-100 rounded-lg p-1">
+              <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                 <button
                   onClick={() => setActiveTab('notifications')}
                   className={`flex-1 ${isMobile ? 'text-xs py-3' : 'text-sm py-2'} px-3 rounded-md transition-colors ${
                     activeTab === 'notifications'
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
+                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
                   Notifications {unreadCount > 0 && `(${unreadCount})`}
@@ -159,8 +161,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                   onClick={() => setActiveTab('activity')}
                   className={`flex-1 ${isMobile ? 'text-xs py-3' : 'text-sm py-2'} px-3 rounded-md transition-colors ${
                     activeTab === 'activity'
-                      ? 'bg-white shadow-sm text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-white'
+                      : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'
                   }`}
                 >
                   Activity
@@ -175,9 +177,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                       <button
                         onClick={() => setFilter('all')}
                         className={`text-xs px-2 py-1 rounded ${
-                          filter === 'all' 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'text-gray-600 hover:bg-gray-100'
+                          filter === 'all'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                       >
                         All
@@ -185,27 +187,27 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                       <button
                         onClick={() => setFilter('unread')}
                         className={`text-xs px-2 py-1 rounded ${
-                          filter === 'unread' 
-                            ? 'bg-blue-100 text-blue-700' 
-                            : 'text-gray-600 hover:bg-gray-100'
+                          filter === 'unread'
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                       >
                         Unread
                       </button>
                     </div>
-                    
+
                     {filteredNotifications.length > 0 && (
                       <div className="flex space-x-1">
                         <button
                           onClick={markAllAsRead}
-                          className="text-xs text-blue-600 hover:text-blue-700"
+                          className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                           title="Mark all as read"
                         >
                           <CheckCheck className="w-4 h-4" />
                         </button>
                         <button
                           onClick={clearAllNotifications}
-                          className="text-xs text-gray-600 hover:text-gray-700"
+                          className="text-xs text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                           title="Clear all"
                         >
                           <X className="w-4 h-4" />
@@ -214,11 +216,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                     )}
                   </>
                 )}
-                
+
                 {activeTab === 'activity' && (
                   <div className="flex items-center space-x-2">
                     <span className={`inline-flex items-center text-xs ${
-                      isListening ? 'text-green-600' : 'text-gray-500'
+                      isListening ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
                     }`}>
                       <Activity className={`w-3 h-3 mr-1 ${isListening ? 'animate-pulse' : ''}`} />
                       {isListening ? 'Live' : 'Paused'}
@@ -231,16 +233,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
             {/* Content */}
             <div className="flex-1 overflow-y-auto">
               {activeTab === 'notifications' ? (
-                <div className="divide-y">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredNotifications.length === 0 ? (
-                    <div className={`${isMobile ? 'p-6' : 'p-8'} text-center text-gray-500`}>
+                    <div className={`${isMobile ? 'p-6' : 'p-8'} text-center text-gray-500 dark:text-gray-400`}>
                       <Bell className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-3 opacity-30`} />
                       <p className={isMobile ? 'text-sm' : ''}>No notifications yet</p>
                       <p className="text-xs mt-1">
                         {!autoNotifyEnabled ? (
                           <button
                             onClick={enableAutoNotifications}
-                            className="text-blue-600 hover:text-blue-700"
+                            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                           >
                             Enable notifications
                           </button>
@@ -253,8 +255,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                     filteredNotifications.map(notification => (
                       <div
                         key={notification.id}
-                        className={`p-3 hover:bg-gray-50 cursor-pointer ${
-                          !notification.read ? 'bg-blue-50/50' : ''
+                        className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                          !notification.read ? 'bg-blue-50/50 dark:bg-blue-950/20' : ''
                         }`}
                         onClick={() => {
                           markAsRead(notification.id)
@@ -271,16 +273,16 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                                 getNotificationTypeColor(notification.type).split(' ')[1]
                               }`} />
                               <h4 className={`text-sm font-medium ${
-                                !notification.read ? 'text-gray-900' : 'text-gray-700'
+                                !notification.read ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'
                               }`}>
                                 {notification.title}
                               </h4>
                             </div>
-                            <p className="text-sm text-gray-600 mb-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                               {notification.message}
                             </p>
                             <div className="flex items-center justify-between">
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {formatTime(notification.timestamp)}
                               </span>
                               {!notification.read && (
@@ -289,7 +291,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                                     e.stopPropagation()
                                     markAsRead(notification.id)
                                   }}
-                                  className="text-xs text-blue-600 hover:text-blue-700"
+                                  className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
                                   title="Mark as read"
                                 >
                                   <Check className="w-3 h-3" />
@@ -302,7 +304,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                               e.stopPropagation()
                               removeNotification(notification.id)
                             }}
-                            className="ml-2 p-1 hover:bg-gray-200 rounded"
+                            className="ml-2 p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
                             title="Remove"
                           >
                             <X className="w-3 h-3" />
@@ -313,9 +315,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                   )}
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className="divide-y divide-gray-200 dark:divide-gray-700">
                   {activities.length === 0 ? (
-                    <div className={`${isMobile ? 'p-6' : 'p-8'} text-center text-gray-500`}>
+                    <div className={`${isMobile ? 'p-6' : 'p-8'} text-center text-gray-500 dark:text-gray-400`}>
                       <Activity className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto mb-3 opacity-30`} />
                       <p className={isMobile ? 'text-sm' : ''}>No recent activity</p>
                       <p className="text-xs mt-1">
@@ -324,19 +326,19 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                     </div>
                   ) : (
                     activities.map(activity => (
-                      <div key={activity.id} className="p-3 hover:bg-gray-50">
+                      <div key={activity.id} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800">
                         <div className="flex items-start space-x-3">
-                          <div className="flex-shrink-0 mt-1">
+                          <div className="flex-shrink-0 mt-1 text-gray-500 dark:text-gray-400">
                             {getActivityIcon(activity.type)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-1">
                               {activity.title}
                             </h4>
-                            <p className="text-sm text-gray-600 mb-2">
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                               {activity.description}
                             </p>
-                            <div className="flex items-center justify-between text-xs text-gray-500">
+                            <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
                               <div className="flex items-center space-x-2">
                                 <Clock className="w-3 h-3" />
                                 <span>{formatTime(activity.timestamp)}</span>
@@ -360,45 +362,45 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
             </div>
 
             {/* Footer */}
-            <div className="p-3 border-t bg-gray-50 rounded-b-xl">
+            <div className="p-3 border-t border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 rounded-b-xl">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2 text-xs text-gray-600">
+                <div className="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-400">
                   <Settings className="w-3 h-3" />
                   <span>Settings</span>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   {activeTab === 'notifications' && (
                     <>
                       <button
                         onClick={autoNotifyEnabled ? disableAutoNotifications : enableAutoNotifications}
                         className={`text-xs px-2 py-1 rounded ${
-                          autoNotifyEnabled 
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                          autoNotifyEnabled
+                            ? 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:hover:bg-green-900/60'
+                            : 'bg-gray-200 text-gray-600 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                         }`}
                       >
                         {autoNotifyEnabled ? 'Auto On' : 'Auto Off'}
                       </button>
-                      
+
                       {supported && permission !== 'granted' && (
                         <button
                           onClick={requestPermission}
-                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200"
+                          className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:hover:bg-blue-900/60"
                         >
                           Enable Push
                         </button>
                       )}
                     </>
                   )}
-                  
+
                   {activeTab === 'activity' && (
                     <button
                       onClick={isListening ? stopListening : startListening}
                       className={`text-xs px-2 py-1 rounded ${
-                        isListening 
-                          ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                          : 'bg-green-100 text-green-700 hover:bg-green-200'
+                        isListening
+                          ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-300 dark:hover:bg-red-900/60'
+                          : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-300 dark:hover:bg-green-900/60'
                       }`}
                     >
                       {isListening ? 'Stop' : 'Start'}
