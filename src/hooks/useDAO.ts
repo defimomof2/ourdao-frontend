@@ -215,10 +215,7 @@ function useWriteAction() {
 
 export function useMemberRegistration() {
   const { run, isPending, isSuccess, error } = useWriteAction()
-  // Extra args kept for call-site compatibility; the Soroban contract pulls the
-  // fee via the configured token and takes no ENS/KYC arguments.
-  const registerMember = (_ensName?: string, _kycHash?: string, _fee?: bigint) =>
-    run('Registering membership', (w) => w.registerMember())
+  const registerMember = () => run('Registering membership', (w) => w.registerMember())
   return { registerMember, isPending, error, isSuccess }
 }
 

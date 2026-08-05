@@ -17,7 +17,7 @@ import {
   TrophyIcon,
 } from '@heroicons/react/24/outline'
 import { useDAOStats, useUserData, useRewards, useDAOEvents, eventLabel } from '@/hooks/useDAO'
-import { formatEther, formatDate, formatAddress } from '@/lib/utils'
+import { formatToken, formatDate, formatAddress } from '@/lib/utils'
 import { MEMBER_STATUS_LABELS } from '@/constants'
 import toast from 'react-hot-toast'
 import { useIsMobile, useResponsiveCardLayout } from '@/lib/responsive'
@@ -220,7 +220,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Share Balance</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {formatEther(userData.member?.shareBalance || BigInt(0))} ETH
+                        {formatToken(userData.member?.shareBalance || BigInt(0))}
                       </p>
                     </div>
                   </div>
@@ -236,7 +236,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Rewards</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {formatEther(userData.pendingRewards)} ETH
+                        {formatToken(userData.pendingRewards)}
                       </p>
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Yield Available</p>
                       <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                        {formatEther(userData.pendingYield)} ETH
+                        {formatToken(userData.pendingYield)}
                       </p>
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
                     <div>
                       <p className="font-medium text-green-900 dark:text-green-300">Governance Rewards</p>
-                      <p className="text-sm text-green-700 dark:text-green-400">{formatEther(userData.pendingRewards)} ETH</p>
+                      <p className="text-sm text-green-700 dark:text-green-400">{formatToken(userData.pendingRewards)}</p>
                     </div>
                     <Button 
                       onClick={handleClaimRewards} 
@@ -306,7 +306,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
                     <div>
                       <p className="font-medium text-purple-900 dark:text-purple-300">Restaking Yield</p>
-                      <p className="text-sm text-purple-700 dark:text-purple-400">{formatEther(userData.pendingYield)} ETH</p>
+                      <p className="text-sm text-purple-700 dark:text-purple-400">{formatToken(userData.pendingYield)}</p>
                     </div>
                     <Button 
                       onClick={handleClaimYield} 
@@ -372,11 +372,11 @@ export default function DashboardPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Treasury Balance</span>
-                  <span className="font-medium">{formatEther(stats.treasuryBalance)} ETH</span>
+                  <span className="font-medium">{formatToken(stats.treasuryBalance)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-400">Total Yield</span>
-                  <span className="font-medium">{formatEther(stats.totalYieldGenerated)} ETH</span>
+                  <span className="font-medium">{formatToken(stats.totalYieldGenerated)}</span>
                 </div>
               </CardContent>
             </Card>

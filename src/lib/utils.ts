@@ -11,18 +11,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Format ethereum values from wei to readable format
-export function formatEther(value: bigint | string | number, decimals: number = 4): string {
-  try {
-    const bigValue = typeof value === 'bigint' ? value : BigInt(value.toString())
-    const divisor = BigInt('1000000000000000000') // 1e18 wei in 1 ether
-    const etherValue = Number(bigValue) / Number(divisor)
-    return etherValue.toFixed(decimals)
-  } catch {
-    return '0.0000'
-  }
-}
-
 // Format a Soroban token amount (Stellar assets use 7 decimals) for display.
 // Keeps full integer precision via BigInt; trims trailing fractional zeros.
 export function formatToken(
@@ -71,7 +59,7 @@ export function formatDate(timestamp: number | string | Date): string {
   }
 }
 
-// Format ethereum addresses to shortened format
+// Format an address to shortened form
 export function formatAddress(address: string, startLength: number = 6, endLength: number = 4): string {
   if (!address || address.length < 10) return address
   return `${address.slice(0, startLength)}...${address.slice(-endLength)}`
@@ -83,16 +71,20 @@ export function calculatePercentage(votes: number, totalVotes: number): number {
   return Math.round((votes / totalVotes) * 100)
 }
 
-// Parse ether from string to wei (BigInt)
-export function parseEther(value: string): bigint {
+// Parse a decimal string into a Soroban token amount (BigInt, 7-decimal default).
+// Inverse of formatToken; splits on the decimal point instead of doing
+// floating-point math, so precision isn't lost for large amounts.
+export function parseToken(value: string, decimals: number = 7): bigint {
   try {
     const cleanValue = value.trim()
     if (!cleanValue || isNaN(Number(cleanValue))) {
       throw new Error('Invalid number')
     }
-    const etherValue = Number(cleanValue)
-    const weiValue = BigInt(Math.floor(etherValue * 1e18))
-    return weiValue
+    const [wholePart, fracPart = ''] = cleanValue.split('.')
+    const base = BigInt(10) ** BigInt(decimals)
+    const whole = BigInt(wholePart || '0') * base
+    const frac = BigInt((fracPart + '0'.repeat(decimals)).slice(0, decimals) || '0')
+    return whole + frac
   } catch {
     return BigInt(0)
   }

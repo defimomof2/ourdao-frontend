@@ -1,9 +1,9 @@
 'use client'
 
 /**
- * Drop-in replacement for RainbowKit's <ConnectButton /> and
- * <ConnectButton.Custom>, backed by the Freighter wallet context. Keeps the
- * same surface the pages already use so they need only change the import path.
+ * Wallet connect button backed by the Freighter wallet context. Exposes both
+ * a plain <ConnectButton /> and a <ConnectButton.Custom> render-prop variant
+ * for pages that need custom layout around the connect/account state.
  */
 import type { ReactNode } from 'react'
 import { useWallet } from '@/lib/wallet'

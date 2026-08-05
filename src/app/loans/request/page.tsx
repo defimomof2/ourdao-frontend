@@ -17,7 +17,7 @@ import {
   DocumentIcon
 } from '@heroicons/react/24/outline'
 import { useDAOStats, useUserData, useLoanRequest } from '@/hooks/useDAO'
-import { formatEther, parseEther, generateCommitment } from '@/lib/utils'
+import { parseToken, generateCommitment } from '@/lib/utils'
 import { DAO_CONSTANTS } from '@/constants'
 import dynamic from 'next/dynamic'
 
@@ -125,7 +125,7 @@ export default function RequestLoanPage() {
     }
 
     try {
-      const amount = parseEther(formData.amount)
+      const amount = parseToken(formData.amount)
       let commitment = ''
       
       if (formData.isPrivate && formData.privacySecret) {
@@ -159,21 +159,21 @@ export default function RequestLoanPage() {
             <div className="space-y-4">
               <div>
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Loan Amount (ETH) *
+                  Loan Amount *
                 </label>
                 <input
                   type="number"
                   id="amount"
                   step="0.01"
                   min="0.01"
-                  max={formatEther(BigInt(DAO_CONSTANTS.MAX_LOAN_AMOUNT) * BigInt(10**18))}
+                  max={DAO_CONSTANTS.MAX_LOAN_AMOUNT}
                   placeholder="0.00"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   value={formData.amount}
                   onChange={(e) => handleInputChange('amount', e.target.value)}
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Maximum loan amount: {DAO_CONSTANTS.MAX_LOAN_AMOUNT} ETH
+                  Maximum loan amount: {DAO_CONSTANTS.MAX_LOAN_AMOUNT}
                 </p>
               </div>
 
@@ -200,7 +200,7 @@ export default function RequestLoanPage() {
                   <div className="space-y-2 text-sm text-blue-800 dark:text-blue-400">
                     <div className="flex justify-between">
                       <span>Loan Amount:</span>
-                      <span>{formData.amount} ETH</span>
+                      <span>{formData.amount}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Estimated Interest Rate:</span>
@@ -208,7 +208,7 @@ export default function RequestLoanPage() {
                     </div>
                     <div className="flex justify-between">
                       <span>Estimated Total Repayment:</span>
-                      <span>{(parseFloat(formData.amount) * (1 + estimatedInterest / 100)).toFixed(4)} ETH</span>
+                      <span>{(parseFloat(formData.amount) * (1 + estimatedInterest / 100)).toFixed(4)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Maximum Term:</span>
@@ -493,7 +493,7 @@ export default function RequestLoanPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Requested Amount:</span>
                   <span className="font-medium">
-                    {formData.isPrivate && formData.hideAmount ? '[PRIVATE]' : `${formData.amount} ETH`}
+                    {formData.isPrivate && formData.hideAmount ? '[PRIVATE]' : formData.amount}
                   </span>
                 </div>
                 

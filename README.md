@@ -5,8 +5,6 @@
 
 A [Next.js](https://nextjs.org) web app for the **OurDAO** member-owned lending DAO on **Stellar Soroban**.
 
-This frontend was ported from an EVM stack (wagmi / RainbowKit / ethers) to Stellar:
-
 - **Wallet:** [Freighter](https://www.freighter.app/) via `@stellar/freighter-api`
 - **Chain access:** `@stellar/stellar-sdk` (Soroban RPC — simulate for reads, prepare/sign/submit for writes)
 - **Contract:** the [`ourdao-contracts`](https://github.com/ourdao/ourdao-contracts) Soroban DAO
@@ -100,7 +98,7 @@ Data flows through [TanStack Query](https://tanstack.com/query) throughout: `use
 | `src/lib/stellar.ts` | Network config, RPC client, explorer URLs |
 | `src/lib/wallet.tsx` | Freighter connect/disconnect/sign context (`useWallet`) |
 | `src/lib/dao-client.ts` | Soroban read/invoke + typed wrappers for every contract method |
-| `src/components/ConnectButton.tsx` | Freighter-backed drop-in for the old RainbowKit button |
+| `src/components/ConnectButton.tsx` | Freighter connect/disconnect UI |
 | `src/hooks/useDAO.ts` | React Query hooks the pages consume |
 
 ## Theming
@@ -148,7 +146,7 @@ Running on Next.js 16 (Turbopack by default) + React 19.2.
 ## Roadmap
 
 - Replace the dead IPFS/Infura endpoint with a real pinning provider.
-- Rework the loan detail page's data model so it derives loan/proposal state more directly (some legacy fields from the EVM port still shadow real on-chain data in places not yet fully migrated).
+- Rework the loan detail page's data model so it derives loan/proposal state more directly (some legacy fields still shadow real on-chain data in places not yet fully migrated).
 - Convert `DocumentViewer.tsx`'s manual fetch-in-effect to React Query, matching the rest of the app's data-fetching convention (currently unused in the app, flagged rather than silently left as-is).
 
 ## License

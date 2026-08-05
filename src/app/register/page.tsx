@@ -8,14 +8,12 @@ import { ConnectButton } from '@/components/ConnectButton'
 import Link from 'next/link'
 import {
   UserIcon,
-  DocumentTextIcon,
   CurrencyDollarIcon,
-  ShieldCheckIcon,
   ArrowLeftIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline'
 import { useDAOStats, useUserData, useMemberRegistration } from '@/hooks/useDAO'
-import { formatEther } from '@/lib/utils'
+import { formatToken } from '@/lib/utils'
 import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
@@ -25,13 +23,11 @@ export default function RegisterPage() {
   const { registerMember, isPending, error, isSuccess } = useMemberRegistration()
   
   const [formData, setFormData] = useState({
-    ensName: '',
-    kycHash: '',
     acceptTerms: false,
   })
-  
+
   const [step, setStep] = useState(1)
-  const maxSteps = 3
+  const maxSteps = 2
 
   useEffect(() => {
     if (userData.isConnected && userData.isMember) {
@@ -70,11 +66,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await registerMember(
-        formData.ensName || undefined,
-        formData.kycHash || undefined,
-        stats.membershipFee
-      )
+      await registerMember()
     } catch (err) {
       console.error('Registration error:', err)
     }
@@ -108,7 +100,7 @@ export default function RegisterPage() {
               <div className="flex justify-between items-center">
                 <span className="text-gray-700 dark:text-gray-300">Membership Fee:</span>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">
-                  {formatEther(stats.membershipFee)} ETH
+                  {formatToken(stats.membershipFee)}
                 </span>
               </div>
             </div>
@@ -116,65 +108,6 @@ export default function RegisterPage() {
         )
 
       case 2:
-        return (
-          <div className="space-y-6">
-            <div className="text-center">
-              <DocumentTextIcon className="h-16 w-16 text-primary-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Optional Enhancements</h2>
-              <p className="text-gray-600 dark:text-gray-400">
-                Enhance your membership with ENS integration and document verification.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="ensName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  ENS Name (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="ensName"
-                  placeholder="yourname.eth"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  value={formData.ensName}
-                  onChange={(e) => handleInputChange('ensName', e.target.value)}
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Link your ENS name for enhanced voting weight and professional identity
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="kycHash" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  KYC Document Hash (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="kycHash"
-                  placeholder="QmXxXxXx... (IPFS hash)"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  value={formData.kycHash}
-                  onChange={(e) => handleInputChange('kycHash', e.target.value)}
-                />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Upload KYC documents to IPFS and provide the hash for enhanced member status
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-yellow-50 border border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-900 rounded-lg p-4">
-              <div className="flex items-start">
-                <ShieldCheckIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 mr-2" />
-                <div className="text-sm text-yellow-800 dark:text-yellow-300">
-                  <p className="font-medium">Privacy Notice</p>
-                  <p>All personal information is stored on IPFS and linked via hash only. Your data remains under your control.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 3:
         return (
           <div className="space-y-6">
             <div className="text-center">
@@ -193,24 +126,10 @@ export default function RegisterPage() {
                   <span className="text-gray-600 dark:text-gray-400">Wallet Address:</span>
                   <span className="font-mono">{userData.address}</span>
                 </div>
-                
-                {formData.ensName && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">ENS Name:</span>
-                    <span>{formData.ensName}</span>
-                  </div>
-                )}
-                
-                {formData.kycHash && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-400">KYC Document:</span>
-                    <span className="font-mono text-xs">{formData.kycHash.slice(0, 20)}...</span>
-                  </div>
-                )}
-                
+
                 <div className="flex justify-between border-t pt-2">
                   <span className="font-medium text-gray-900 dark:text-white">Membership Fee:</span>
-                  <span className="font-bold">{formatEther(stats.membershipFee)} ETH</span>
+                  <span className="font-bold">{formatToken(stats.membershipFee)}</span>
                 </div>
               </div>
             </div>

@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { useUserData, useVoting, useLoanProposals, type UILoanProposal } from '@/hooks/useDAO'
 import { useNow } from '@/hooks/useNow'
-import { formatEther, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
+import { formatToken, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
 import toast from 'react-hot-toast'
 import { AppShell } from '@/components/AppShell'
@@ -323,7 +323,7 @@ export default function LoansPage() {
                     <div>
                       <p className="text-sm text-gray-600 dark:text-gray-400">Amount Requested</p>
                       <p className="font-semibold">
-                        {proposal.isPrivate ? 'Private' : `${formatEther(proposal.amount)} ETH`}
+                        {proposal.isPrivate ? 'Private' : formatToken(proposal.amount)}
                       </p>
                     </div>
                     <div>
