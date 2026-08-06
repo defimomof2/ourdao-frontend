@@ -20,24 +20,23 @@ export function OrbitMark({ className }: { className?: string }) {
           <stop offset="1" stopColor="#4f46e5" />
         </linearGradient>
       </defs>
-      <circle cx="256" cy="256" r="170" fill="none" stroke={`url(#${ringGradId})`} strokeWidth="3" opacity="0.3" />
+      <circle cx="256" cy="256" r="170" fill="none" stroke={`url(#${ringGradId})`} strokeWidth="4" opacity="0.55" />
       <polygon
         points="256,86 376.21,135.79 426,256 376.21,376.21 256,426 135.79,376.21 86,256 135.79,135.79"
         fill="none"
         stroke={`url(#${ringGradId})`}
-        strokeWidth="5"
+        strokeWidth="9"
         strokeLinejoin="round"
-        opacity="0.55"
       />
       <g fill={`url(#${ringGradId})`}>
-        <circle cx="256" cy="86" r="17" />
-        <circle cx="376.21" cy="135.79" r="17" />
-        <circle cx="426" cy="256" r="17" />
-        <circle cx="376.21" cy="376.21" r="17" />
-        <circle cx="256" cy="426" r="17" />
-        <circle cx="135.79" cy="376.21" r="17" />
-        <circle cx="86" cy="256" r="17" />
-        <circle cx="135.79" cy="135.79" r="17" />
+        <circle cx="256" cy="86" r="22" />
+        <circle cx="376.21" cy="135.79" r="22" />
+        <circle cx="426" cy="256" r="22" />
+        <circle cx="376.21" cy="376.21" r="22" />
+        <circle cx="256" cy="426" r="22" />
+        <circle cx="135.79" cy="376.21" r="22" />
+        <circle cx="86" cy="256" r="22" />
+        <circle cx="135.79" cy="135.79" r="22" />
       </g>
       <polygon
         points="256,178 277.21,234.79 334,256 277.21,277.21 256,334 234.79,277.21 178,256 234.79,234.79"
