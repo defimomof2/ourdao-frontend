@@ -35,6 +35,7 @@ This repository is one of three that make up OurDAO:
 - [What's real vs. not](#whats-real-vs-not)
 - [Security notes](#security-notes)
 - [Roadmap](#roadmap)
+- [Contributing](#contributing)
 - [License](#license)
 
 ## Getting started
@@ -152,6 +153,12 @@ Running on Next.js 16 (Turbopack by default) + React 19.2.
 - Replace the dead IPFS/Infura endpoint with a real pinning provider.
 - Rework the loan detail page's data model so it derives loan/proposal state more directly (some legacy fields still shadow real on-chain data in places not yet fully migrated).
 - Convert `DocumentViewer.tsx`'s manual fetch-in-effect to React Query, matching the rest of the app's data-fetching convention (currently unused in the app, flagged rather than silently left as-is).
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup, the checks CI enforces, and the frontend-specific rules (no fabricated content, TanStack Query for all data fetching, `cn()` for class composition, both themes verified). Please claim an issue before opening a pull request.
+
+Found a security vulnerability? Don't open a public issue — use GitHub's private vulnerability reporting on this repo.
 
 ## License
 
