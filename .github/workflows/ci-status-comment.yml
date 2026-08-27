@@ -1,0 +1,87 @@
+name: CI status comment
+
+# Runs in the base repo's context using the workflow file from `main`, never the
+# fork's copy of it — this is what makes it safe to give it write access even
+# though it's reacting to untrusted fork PRs. It never checks out or executes
+# any PR code; it only reads the ci-status.json artifact the CI workflow produced.
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download CI status artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-status
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Post or update PR comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const status = JSON.parse(fs.readFileSync('ci-status.json', 'utf8'));
+            if (!status.pr_number) return;
+
+            const jobs = [
+              ['Lint', 'lint', 'npm run lint'],
+              ['Typecheck', 'typecheck', 'npm run typecheck'],
+              ['Test', 'test', 'npm test'],
+              ['Build', 'build', 'npm run build'],
+            ];
+
+            const icon = (r) =>
+              r === 'success' ? '✅' :
+              r === 'skipped' ? '⏭️' :
+              r === 'cancelled' ? '⏹️' : '❌';
+
+            const failed = jobs.filter(([, key]) =>
+              !['success', 'skipped'].includes(status.results[key]));
+
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${status.run_id}`;
+
+            const marker = '<!-- ci-status-comment -->';
+            let body = `${marker}\n### CI status\n\n`;
+            body += jobs.map(([label, key]) => `- ${icon(status.results[key])} **${label}**`).join('\n');
+            body += `\n\n[Full run details](${runUrl})`;
+
+            if (failed.length > 0) {
+              body += `\n\nThis PR can't be merged until the failing check(s) above are fixed. Reproduce locally:\n`;
+              body += failed.map(([, key, cmd]) => `- \`${cmd}\``).join('\n');
+            } else {
+              body += `\n\nAll required checks passed.`;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: status.pr_number,
+            });
+            const existing = comments.find((c) => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: status.pr_number,
+                body,
+              });
+            }
