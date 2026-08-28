@@ -52,8 +52,8 @@ function StatCard({
           <Icon className="h-6 w-6" />
         </div>
         <div className="min-w-0">
-          <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
-          <p className="truncate text-xl font-bold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="truncate text-xl font-bold text-foreground">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -76,11 +76,11 @@ export default function TreasuryPage() {
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-6 text-center">
-              <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-500" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+              <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium text-foreground">
                 Connect Your Wallet
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 Please connect your wallet to access the treasury.
               </p>
             </CardContent>
@@ -157,12 +157,12 @@ export default function TreasuryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               Stake tokens to boost your voting weight. Staked funds are held
               separately from the treasury and can be withdrawn at any time.
             </p>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 Amount
               </label>
               <input
@@ -174,7 +174,7 @@ export default function TreasuryPage() {
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
                 disabled={!userData.isMember || staking}
-                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-gray-50 dark:disabled:bg-gray-800"
+                className="w-full rounded-lg border border-input px-3 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-muted"
               />
             </div>
             <div className="flex gap-2">
@@ -221,27 +221,27 @@ export default function TreasuryPage() {
               </div>
             ) : proposals.length === 0 ? (
               <div className="py-10 text-center">
-                <BanknotesIcon className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-gray-600" />
-                <p className="text-gray-600 dark:text-gray-400">No treasury withdrawals yet.</p>
+                <BanknotesIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+                <p className="text-muted-foreground">No treasury withdrawals yet.</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+              <ul className="divide-y divide-border">
                 {proposals.map((p) => (
                   <li key={p.id} className="py-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900 dark:text-white">{p.title}</p>
+                          <p className="font-medium text-foreground">{p.title}</p>
                           {p.isPrivate && (
                             <Badge variant="secondary" className="text-xs">
                               Private
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           {formatToken(p.amount)} → {formatAddress(p.recipient)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
