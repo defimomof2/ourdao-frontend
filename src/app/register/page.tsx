@@ -79,8 +79,8 @@ export default function RegisterPage() {
           <div className="space-y-6">
             <div className="text-center">
               <UserIcon className="h-16 w-16 text-primary-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome to OurDAO</h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Welcome to OurDAO</h2>
+              <p className="text-muted-foreground">
                 Join our community of {stats.activeMembers} active members and access advanced DeFi lending features.
               </p>
             </div>
@@ -96,10 +96,10 @@ export default function RegisterPage() {
               </ul>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+            <div className="bg-muted rounded-lg p-4">
               <div className="flex justify-between items-center">
-                <span className="text-gray-700 dark:text-gray-300">Membership Fee:</span>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                <span className="text-foreground">Membership Fee:</span>
+                <span className="text-xl font-bold text-foreground">
                   {formatToken(stats.membershipFee)}
                 </span>
               </div>
@@ -112,23 +112,23 @@ export default function RegisterPage() {
           <div className="space-y-6">
             <div className="text-center">
               <CurrencyDollarIcon className="h-16 w-16 text-primary-600 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Complete Registration</h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <h2 className="text-2xl font-bold text-foreground mb-2">Complete Registration</h2>
+              <p className="text-muted-foreground">
                 Review your information and complete the membership registration.
               </p>
             </div>
 
-            <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Registration Summary</h3>
+            <div className="border border-border rounded-lg p-4 space-y-3">
+              <h3 className="font-semibold text-foreground">Registration Summary</h3>
               
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Wallet Address:</span>
+                  <span className="text-muted-foreground">Wallet Address:</span>
                   <span className="font-mono">{userData.address}</span>
                 </div>
 
                 <div className="flex justify-between border-t pt-2">
-                  <span className="font-medium text-gray-900 dark:text-white">Membership Fee:</span>
+                  <span className="font-medium text-foreground">Membership Fee:</span>
                   <span className="font-bold">{formatToken(stats.membershipFee)}</span>
                 </div>
               </div>
@@ -139,11 +139,11 @@ export default function RegisterPage() {
                 <input
                   type="checkbox"
                   id="acceptTerms"
-                  className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded"
+                  className="mt-1 h-4 w-4 text-primary-600 focus:ring-primary-500 border-input rounded"
                   checked={formData.acceptTerms}
                   onChange={(e) => handleInputChange('acceptTerms', e.target.checked)}
                 />
-                <label htmlFor="acceptTerms" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                <label htmlFor="acceptTerms" className="ml-2 text-sm text-foreground">
                   I accept the{' '}
                   <a href="#" className="text-primary-600 hover:text-primary-500">
                     Terms and Conditions
@@ -178,7 +178,7 @@ export default function RegisterPage() {
                       ? 'bg-green-500 text-white'
                       : isCurrent
                       ? 'bg-primary-600 text-white'
-                      : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+                      : 'bg-muted text-muted-foreground'
                   }
                 `}
               >
@@ -187,7 +187,7 @@ export default function RegisterPage() {
               {stepNumber < maxSteps && (
                 <div
                   className={`w-8 h-0.5 ${
-                    stepNumber < step ? 'bg-green-500' : 'bg-gray-200 dark:bg-gray-700'
+                    stepNumber < step ? 'bg-green-500' : 'bg-muted'
                   }`}
                 />
               )}
@@ -200,7 +200,7 @@ export default function RegisterPage() {
 
   if (!userData.isConnected) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-950 dark:to-blue-950/20 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background to-blue-50 dark:from-background dark:to-blue-950/20 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Connect Your Wallet</CardTitle>
@@ -217,7 +217,7 @@ export default function RegisterPage() {
               )}
             </ConnectButton.Custom>
             <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
                 ← Back to Home
               </Link>
             </div>
@@ -228,17 +228,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-950 dark:to-blue-950/20 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-background to-blue-50 dark:from-background dark:to-blue-950/20 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
           <Link
             href="/"
-            className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4"
           >
             <ArrowLeftIcon className="h-4 w-4 mr-1" />
             Back to Home
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center">Join the DAO</h1>
+          <h1 className="text-3xl font-bold text-foreground text-center">Join the DAO</h1>
         </div>
 
         <Card>
