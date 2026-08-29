@@ -8,7 +8,8 @@ import {
   type ActivityItem
 } from '@/lib/pushNotifications'
 import { useIsMobile, useResponsiveModal } from '@/lib/responsive'
-import { 
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import {
   Bell, 
   X, 
   Check, 
@@ -108,37 +109,39 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
 
   return (
     <div className={`relative ${className}`}>
-      {/* Notification Bell Button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        title="Notifications"
-      >
-        <Bell className="w-6 h-6" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-            {unreadCount > 99 ? '99+' : unreadCount}
-          </span>
-        )}
-      </button>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        {/* Notification Bell Button */}
+        <PopoverTrigger asChild>
+          <button
+            className="relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title="Notifications"
+          >
+            <Bell className="w-6 h-6" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </PopoverTrigger>
 
-      {/* Notification Panel */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 z-40 bg-black/20"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Panel */}
-          <div className={`absolute ${isMobile ? 'left-0 right-0 top-full' : 'right-0 top-full'} mt-2 ${isMobile ? 'w-screen' : 'w-96'} bg-white dark:bg-gray-900 ${isMobile ? 'rounded-t-xl' : 'rounded-xl'} shadow-xl border border-gray-200 dark:border-gray-700 z-50 ${isMobile ? 'max-h-screen' : 'max-h-96'} flex flex-col`}>
+        {/* Notification Panel — a non-modal Popover: Escape closes it and
+            returns focus to the bell trigger, opening moves focus into the
+            panel, and outside clicks dismiss it, all handled by Radix. The
+            background is intentionally left interactive (no backdrop/scroll
+            lock), matching a popover rather than a modal dialog. */}
+        <PopoverContent
+          align={isMobile ? 'center' : 'end'}
+          aria-label="Notifications"
+          className={`p-0 ${isMobile ? 'w-screen rounded-t-xl' : 'w-96'} border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 ${isMobile ? 'max-h-screen' : 'max-h-96'} flex flex-col`}
+        >
             {/* Header */}
             <div className="p-4 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
                 <button
                   onClick={() => setIsOpen(false)}
+                  aria-label="Close notifications"
                   className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
                 >
                   <X className="w-5 h-5" />
@@ -409,9 +412,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                 </div>
               </div>
             </div>
-          </div>
-        </>
-      )}
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }
