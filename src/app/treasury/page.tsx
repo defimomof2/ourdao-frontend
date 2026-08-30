@@ -24,15 +24,8 @@ import {
   useTreasuryProposals,
   useTreasuryVoting,
 } from '@/hooks/useDAO'
-import { formatToken, formatAddress } from '@/lib/utils'
+import { formatToken, formatAddress, parseToken } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
-
-// Human amount -> token base units (Stellar assets use 7 decimals).
-function toBaseUnits(input: string): bigint {
-  const n = parseFloat(input)
-  if (!Number.isFinite(n) || n <= 0) return BigInt(0)
-  return BigInt(Math.round(n * 1e7))
-}
 
 function StatCard({
   label,
@@ -91,7 +84,7 @@ export default function TreasuryPage() {
   }
 
   const handleStake = async () => {
-    const base = toBaseUnits(amount)
+    const base = parseToken(amount)
     if (base <= BigInt(0)) return
     try {
       await stake(base)
@@ -102,7 +95,7 @@ export default function TreasuryPage() {
   }
 
   const handleUnstake = async () => {
-    const base = toBaseUnits(amount)
+    const base = parseToken(amount)
     if (base <= BigInt(0)) return
     try {
       await unstake(base)
