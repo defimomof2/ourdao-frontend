@@ -67,6 +67,62 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  # Separate from lint/typecheck/test/build on purpose: a new advisory landing
+  # in the tree affects every open PR at once, regardless of what that PR
+  # changes. Keeping it out of `status`'s needs and off continue-on-error
+  # means a fresh finding shows up as a visible (yellow-triangle) warning here
+  # without turning unrelated PRs red or blocking their merge.
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: npm audit (moderate+, known ipfs-http-client findings allowlisted)
+        continue-on-error: true
+        run: npm run audit
+
+  # Compares the client JS/CSS actually shipped (.next/static) against the
+  # latest baseline captured from main, so a PR's effect on bundle size is
+  # visible instead of invisible until someone notices the app got slower.
+  bundle-size:
+    name: Bundle size
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: node scripts/bundle-size.mjs measure
+      - name: Restore baseline from main
+        if: github.ref != 'refs/heads/main'
+        uses: actions/cache/restore@v4
+        with:
+          path: bundle-size-baseline.json
+          key: bundle-size-baseline-unused
+          restore-keys: |
+            bundle-size-baseline-
+      - name: Compare against baseline and write summary
+        run: node scripts/bundle-size.mjs report
+      - name: Save baseline for main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: cp bundle-size-current.json bundle-size-baseline.json
+      - name: Cache baseline for main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/cache/save@v4
+        with:
+          path: bundle-size-baseline.json
+          key: bundle-size-baseline-${{ github.sha }}
+
   # Records each job's outcome as an artifact so the privileged ci-status-comment.yml
   # workflow (triggered via workflow_run, never a fork's copy of it) can post a PR
   # comment. This job itself never runs with elevated permissions or fork code.
