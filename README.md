@@ -127,7 +127,7 @@ npm test          # vitest
 
 ## Testing
 
-Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage: `dao-client.ts`'s ScVal builders and `policyToScVal`, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers (including `mapLoan`, the real disbursed-loan mapper), `useNotifications.ts`'s hooks, and `useNow.ts`'s `useSyncExternalStore` contract (using fake timers, since the underlying bug it guards against — an infinite render loop — doesn't reproduce reliably just by rendering in jsdom). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`.
+Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage: `dao-client.ts`'s ScVal builders and `policyToScVal`, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers (including `mapLoan`, the real disbursed-loan mapper), `useNotifications.ts`'s hooks, and `useNow.ts`'s `useSyncExternalStore` contract (using fake timers, since the underlying bug it guards against — an infinite render loop — doesn't reproduce reliably just by rendering in jsdom). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`. Two more jobs run alongside, kept separate from those four so an unrelated advisory or a generous, PR-controllable size budget never blocks a PR that has nothing to do with either: a dependency `audit` (see [Dependency hygiene](#security-notes)) that never fails the run (warns instead), and a `bundle-size` check that compares the client JS/CSS shipped from `.next/static` against the latest `main` baseline, only failing on a >5%-and->10 KB gzip regression.
 
 ## What's real vs. not
 
@@ -137,7 +137,7 @@ One known gap remains:
 
 - **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
 
-`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` still sets `typescript.ignoreBuildErrors` — safe to remove now, kept since the CI gate already covers it (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
+`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` no longer sets `typescript.ignoreBuildErrors` — `next build` now fails on type errors just like the CI `typecheck` gate (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
 
 Running on Next.js 16 (Turbopack by default) + React 19.2.
 
@@ -146,7 +146,7 @@ Running on Next.js 16 (Turbopack by default) + React 19.2.
 - **No custody.** The frontend never holds a private key — every signature happens inside the Freighter extension, in the user's own browser context. `src/lib/wallet.tsx` only ever receives a signed transaction XDR back, never a key.
 - **Read-only degradation, not silent failure.** Without a configured contract id or a reachable backend, the UI runs in an explicit "not configured" / empty state rather than throwing — see [Configuration](#configuration).
 - **Error boundaries.** `error.tsx` (route-segment) and `global-error.tsx` (root-layout-level) catch uncaught render errors and offer a retry instead of the previous behavior, where any single uncaught error anywhere in the tree would take down the entire client-side app with no recovery short of a hard reload.
-- **Dependency hygiene.** A critical Next.js RCE and several other npm audit findings were patched; remaining findings are rooted entirely in `ipfs-http-client`'s dependency tree, tracked against the IPFS gap above rather than silently ignored.
+- **Dependency hygiene.** A critical Next.js RCE and several other npm audit findings were patched. The rest is enforced automatically rather than tracked by hand: a separate `audit` job in CI (`.github/workflows/ci.yml`) runs `audit-ci` (config: `audit-ci.jsonc`) on every PR at the moderate-and-above threshold, so a new advisory is caught the day it lands instead of at the next manual review. It's a non-blocking job (visible as a warning, doesn't fail the run) since a fresh advisory affects every open PR at once, not just the one that happens to trigger it. The only findings currently allowlisted are rooted entirely in `ipfs-http-client`'s dependency tree (tracked against the IPFS gap above); each is allowlisted by exact GHSA id with an expiry date, after which it starts failing again until someone deliberately re-reviews and extends it or the dependency is fixed/replaced — see the comments in `audit-ci.jsonc`. [Dependabot](.github/dependabot.yml) opens security-update PRs automatically as advisories get patched upstream, and batches routine (non-security) version bumps into a weekly grouped PR so they don't flood the queue — see [CONTRIBUTING.md](./CONTRIBUTING.md)'s note on unrelated dependency bumps.
 
 ## Roadmap
 

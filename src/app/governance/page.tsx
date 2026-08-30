@@ -108,9 +108,22 @@ function StatCard({
 export default function GovernancePage() {
   const userData = useUserData()
   const stats = useDAOStats()
-  const { proposals: loanProposals, isLoading: loadingLoans } = useLoanProposals()
-  const { proposals: treasuryProposals, isLoading: loadingTreasury } =
-    useTreasuryProposals()
+  const {
+    proposals: loanProposals,
+    isLoading: loadingLoans,
+    hasMore: hasMoreLoans,
+    loadMore: loadMoreLoans,
+    isLoadingMore: loadingMoreLoans,
+    hasErrors: loanErrors,
+  } = useLoanProposals()
+  const {
+    proposals: treasuryProposals,
+    isLoading: loadingTreasury,
+    hasMore: hasMoreTreasury,
+    loadMore: loadMoreTreasury,
+    isLoadingMore: loadingMoreTreasury,
+    hasErrors: treasuryErrors,
+  } = useTreasuryProposals()
   const { voteOnProposal, isPending: votingLoan } = useVoting()
   const { voteOnTreasury, isPending: votingTreasury } = useTreasuryVoting()
 
@@ -198,6 +211,11 @@ export default function GovernancePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {loanErrors && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+                  Some loan proposals couldn&apos;t be loaded and are missing from this list. Try again shortly.
+                </div>
+              )}
               {loadingLoans ? (
                 <LoadingRows />
               ) : loanProposals.length === 0 ? (
@@ -234,6 +252,13 @@ export default function GovernancePage() {
                   ))}
                 </ul>
               )}
+              {!loadingLoans && hasMoreLoans && (
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" onClick={() => loadMoreLoans()} disabled={loadingMoreLoans}>
+                    {loadingMoreLoans ? 'Loading…' : 'Load more'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -248,6 +273,11 @@ export default function GovernancePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {treasuryErrors && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+                  Some treasury proposals couldn&apos;t be loaded and are missing from this list. Try again shortly.
+                </div>
+              )}
               {loadingTreasury ? (
                 <LoadingRows />
               ) : treasuryProposals.length === 0 ? (
@@ -284,6 +314,13 @@ export default function GovernancePage() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {!loadingTreasury && hasMoreTreasury && (
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" onClick={() => loadMoreTreasury()} disabled={loadingMoreTreasury}>
+                    {loadingMoreTreasury ? 'Loading…' : 'Load more'}
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

@@ -1,0 +1,120 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  // Fail on moderate or higher so a new advisory anywhere in the tree is caught.
+  // Only "low"/"info" findings (none currently) are allowed to pass silently.
+  "moderate": true,
+  "report-type": "full",
+
+  // Every entry below is rooted entirely in ipfs-http-client's dependency tree
+  // (see README "Dependency hygiene" and the Roadmap item to replace the
+  // IPFS/Infura pinning provider). Each has an `expiry` -- once it passes,
+  // audit-ci treats the record as inactive and these advisories start failing
+  // CI again, forcing a real decision instead of a silently-permanent skip:
+  // bump/replace ipfs-http-client, or re-review and push the date out with a
+  // reason. Do not bulk-extend these without checking whether a fix landed.
+  "allowlist": [
+    // nanoid -- pulled in via ipfs-core-utils / ipfs-core-types
+    {
+      "GHSA-mwcw-c2x4-8c55": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "nanoid, via ipfs-http-client > ipfs-core-utils. Re-review: has ipfs-http-client dropped nanoid or shipped a patched range?"
+      }
+    },
+    {
+      "GHSA-28wg-ghj8-5hjv": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "nanoid, via ipfs-http-client > ipfs-core-utils. Re-review: has ipfs-http-client dropped nanoid or shipped a patched range?"
+      }
+    },
+    {
+      "GHSA-2v37-7h3g-55p8": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "nanoid, via ipfs-http-client > ipfs-core-utils. Re-review: has ipfs-http-client dropped nanoid or shipped a patched range?"
+      }
+    },
+
+    // parse-duration -- pulled in directly by ipfs-http-client
+    {
+      "GHSA-hcrg-fc28-fcg5": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "parse-duration ReDoS, via ipfs-http-client. Re-review: has a patched parse-duration range shipped?"
+      }
+    },
+
+    // undici -- pulled in via ipfs-core-utils' dns-over-http-resolver
+    {
+      "GHSA-g9mf-h72j-4rw9": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-2mjp-6q6p-2qxm": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-vrm6-8vpv-qv8q": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-v9p9-hfj2-hcw8": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-4992-7rv2-5pvq": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-p88m-4jfj-68fv": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-vxpw-j846-p89q": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-8xcm-r25x-g524": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-m8rv-5g2x-5cg5": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    },
+    {
+      "GHSA-v3r7-h72x-cjcm": {
+        "active": true,
+        "expiry": "2026-11-30",
+        "notes": "undici, via ipfs-http-client > ipfs-core-utils > dns-over-http-resolver."
+      }
+    }
+  ]
+}
