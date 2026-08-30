@@ -77,7 +77,11 @@ export interface UILoanProposal {
   hasVoted: boolean
 }
 
-export function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
+/** `hasVoted` defaults to false for call sites with no voter context (e.g. the
+ *  paginated list fetch, which is shared across viewers and isn't scoped to
+ *  a connected address). Pass the real value — from `useHasVoted` — wherever
+ *  it's actually known for the connected wallet. */
+export function mapLoanProposal(raw: Record<string, unknown>, hasVoted = false): UILoanProposal {
   const editingEnd = Number(raw.editing_period_end ?? 0)
   return {
     id: Number(raw.id ?? 0),
@@ -93,7 +97,7 @@ export function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
     votingEndTime: editingEnd ? editingEnd + VOTING_PERIOD : 0,
     isPrivate: false, // loan proposals are public; treasury proposals can be private
     documentHash: '',
-    hasVoted: false, // not exposed as a view; write path guards double-votes
+    hasVoted,
   }
 }
 
@@ -145,9 +149,16 @@ export interface UITreasuryProposal {
   votesAgainst: number
   creationTime: number
   isPrivate: boolean
+  hasVoted: boolean
 }
 
-export function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryProposal {
+/** See mapLoanProposal's note on `hasVoted` — same default/override contract.
+ *  For a private (commit-reveal) proposal the contract's `has_voted` view
+ *  reports true as soon as the voter has committed, without distinguishing
+ *  that from a fully revealed vote (see `daoRead.hasVoted`); this mapper
+ *  passes that same single boolean through rather than inventing a
+ *  distinction the contract doesn't expose. */
+export function mapTreasuryProposal(raw: Record<string, unknown>, hasVoted = false): UITreasuryProposal {
   const status = tag(raw.status)
   const code = status === 'Executed' ? 5 : status === 'Rejected' ? 4 : 2
   const reason = String(raw.reason ?? '')
@@ -163,6 +174,7 @@ export function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryPro
     votesAgainst: Number(raw.against_votes ?? 0),
     creationTime: Number(raw.created_at ?? 0),
     isPrivate: !!raw.private,
+    hasVoted,
   }
 }
 

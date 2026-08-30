@@ -1,6 +1,6 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useWallet } from '@/lib/wallet'
@@ -339,7 +339,8 @@ export function eventLabel(symbol: unknown): string {
 // ---------------------------------------------------------------------------
 
 const VOTING_PERIOD = 7 * 24 * 60 * 60
-const MAX_ENUMERATE = 100
+export const PROPOSAL_PAGE_SIZE = 20
+export const FETCH_CONCURRENCY = 8
 
 export const tag = (v: unknown): string => String(Array.isArray(v) ? v[0] : v)
 
@@ -372,7 +373,11 @@ export interface UILoanProposal {
   hasVoted: boolean
 }
 
-export function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
+/** `hasVoted` defaults to false for call sites with no voter context (e.g. the
+ *  paginated list fetch, which is shared across viewers and isn't scoped to
+ *  a connected address). Pass the real value — from `useHasVoted` — wherever
+ *  it's actually known for the connected wallet. */
+export function mapLoanProposal(raw: Record<string, unknown>, hasVoted = false): UILoanProposal {
   const editingEnd = Number(raw.editing_period_end ?? 0)
   return {
     id: Number(raw.id ?? 0),
@@ -388,21 +393,75 @@ export function mapLoanProposal(raw: Record<string, unknown>): UILoanProposal {
     votingEndTime: editingEnd ? editingEnd + VOTING_PERIOD : 0,
     isPrivate: false, // loan proposals are public; treasury proposals can be private
     documentHash: '',
-    hasVoted: false, // not exposed as a view; write path guards double-votes
+    hasVoted,
   }
 }
 
-async function fetchByIds<T>(
-  count: number,
-  fetchOne: (id: number) => Promise<Record<string, unknown> | null>,
-  map: (raw: Record<string, unknown>) => T
-): Promise<T[]> {
-  const ids = Array.from({ length: Math.min(count, MAX_ENUMERATE) }, (_, i) => i)
-  const raws = await Promise.all(ids.map((id) => fetchOne(id)))
-  return raws.filter((r): r is Record<string, unknown> => !!r).map(map)
+/** Run `fn` over `items` with at most `limit` calls in flight at once,
+ *  settling each independently (unlike Promise.all, one rejection doesn't
+ *  fail the whole batch). */
+async function settleWithConcurrency<A, B>(
+  items: A[],
+  limit: number,
+  fn: (item: A) => Promise<B>
+): Promise<PromiseSettledResult<B>[]> {
+  const results: PromiseSettledResult<B>[] = new Array(items.length)
+  let next = 0
+  const worker = async () => {
+    while (next < items.length) {
+      const i = next++
+      try {
+        results[i] = { status: 'fulfilled', value: await fn(items[i]) }
+      } catch (reason) {
+        results[i] = { status: 'rejected', reason }
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return results
 }
 
-/** All loan proposals (newest first), read live from the contract. */
+export interface ProposalPage<T> {
+  items: T[]
+  /** true if at least one id in this page failed to fetch and was dropped. */
+  hasErrors: boolean
+  /** offset to request for the next page, or null once the oldest id (0) has been reached. */
+  nextOffset: number | null
+}
+
+/** Fetch one page of proposals, walking backwards from `count - 1` so the
+ *  newest ids come first. `offset` is how many newest-first proposals prior
+ *  pages already covered. */
+export async function fetchProposalPage<T>(
+  count: number,
+  offset: number,
+  fetchOne: (id: number) => Promise<Record<string, unknown> | null>,
+  map: (raw: Record<string, unknown>) => T,
+  pageSize: number = PROPOSAL_PAGE_SIZE
+): Promise<ProposalPage<T>> {
+  const start = count - 1 - offset
+  if (start < 0) return { items: [], hasErrors: false, nextOffset: null }
+
+  const end = Math.max(start - pageSize + 1, 0)
+  const ids: number[] = []
+  for (let id = start; id >= end; id--) ids.push(id)
+
+  const settled = await settleWithConcurrency(ids, FETCH_CONCURRENCY, fetchOne)
+
+  const items: T[] = []
+  let hasErrors = false
+  for (const result of settled) {
+    if (result.status === 'rejected') {
+      hasErrors = true
+    } else if (result.value) {
+      items.push(map(result.value))
+    }
+  }
+
+  return { items, hasErrors, nextOffset: end > 0 ? offset + pageSize : null }
+}
+
+/** All loan proposals (newest first), read live from the contract, paginated. */
 export function useLoanProposals() {
   const { data: stats } = useQuery({
     queryKey: ['backendStats'],
@@ -412,33 +471,70 @@ export function useLoanProposals() {
   })
   const count = stats?.totalLoanProposals ?? 0
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['loanProposals', count],
-    enabled: isContractConfigured() && count > 0,
-    queryFn: () =>
-      fetchByIds(count, (id) => daoRead.getLoanProposal(id), mapLoanProposal),
-  })
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['loanProposals', count],
+      enabled: isContractConfigured() && count > 0,
+      initialPageParam: 0,
+      queryFn: ({ pageParam }) =>
+        fetchProposalPage(count, pageParam, (id) => daoRead.getLoanProposal(id), mapLoanProposal),
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
+    })
 
   // Memoize so the array keeps a stable identity across renders; consumers use
   // it as an effect/memo dependency and a fresh array each render would loop.
-  const proposals = useMemo(
-    () => [...(data ?? [])].sort((a, b) => b.id - a.id),
-    [data]
-  )
-  return { proposals, isLoading, count }
+  const proposals = useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data])
+  const hasErrors = useMemo(() => (data?.pages ?? []).some((p) => p.hasErrors), [data])
+
+  return {
+    proposals,
+    isLoading,
+    count,
+    hasMore: !!hasNextPage,
+    loadMore: fetchNextPage,
+    isLoadingMore: isFetchingNextPage,
+    hasErrors,
+  }
 }
 
-/** A single loan proposal by id. */
+/** Whether the connected wallet has already voted (loan) or at least
+ *  committed (private treasury) on the given proposal — read directly from
+ *  the contract's `has_voted` view, never inferred from indexer events. */
+export function useHasVoted(kind: 'Loan' | 'Treasury', proposalId: number, enabled = true) {
+  const { address } = useWallet()
+  const { data, refetch } = useQuery({
+    queryKey: ['hasVoted', kind, proposalId, address],
+    enabled:
+      enabled &&
+      isContractConfigured() &&
+      !!address &&
+      Number.isFinite(proposalId) &&
+      proposalId >= 0,
+    queryFn: () => daoRead.hasVoted(kind, proposalId, address!),
+  })
+  return { hasVoted: !!data, refetch }
+}
+
+/** A single loan proposal by id, including the connected wallet's real
+ *  hasVoted state. */
 export function useLoanProposal(id: number) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch: refetchProposal } = useQuery({
     queryKey: ['loanProposal', id],
     enabled: isContractConfigured() && Number.isFinite(id) && id >= 0,
-    queryFn: async () => {
-      const raw = await daoRead.getLoanProposal(id)
-      return raw ? mapLoanProposal(raw) : null
-    },
+    queryFn: () => daoRead.getLoanProposal(id),
   })
-  return { proposal: data ?? null, isLoading }
+  const { hasVoted, refetch: refetchHasVoted } = useHasVoted('Loan', id)
+
+  const proposal = useMemo(
+    () => (data ? mapLoanProposal(data, hasVoted) : null),
+    [data, hasVoted]
+  )
+
+  const refetch = useCallback(async () => {
+    await Promise.all([refetchProposal(), refetchHasVoted()])
+  }, [refetchProposal, refetchHasVoted])
+
+  return { proposal, isLoading, refetch }
 }
 
 // ---------------------------------------------------------------------------
@@ -507,9 +603,16 @@ export interface UITreasuryProposal {
   votesAgainst: number
   creationTime: number
   isPrivate: boolean
+  hasVoted: boolean
 }
 
-export function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryProposal {
+/** See mapLoanProposal's note on `hasVoted` — same default/override contract.
+ *  For a private (commit-reveal) proposal the contract's `has_voted` view
+ *  reports true as soon as the voter has committed, without distinguishing
+ *  that from a fully revealed vote (see `daoRead.hasVoted`); this mapper
+ *  passes that same single boolean through rather than inventing a
+ *  distinction the contract doesn't expose. */
+export function mapTreasuryProposal(raw: Record<string, unknown>, hasVoted = false): UITreasuryProposal {
   const status = tag(raw.status)
   const code = status === 'Executed' ? 5 : status === 'Rejected' ? 4 : 2
   const reason = String(raw.reason ?? '')
@@ -525,10 +628,11 @@ export function mapTreasuryProposal(raw: Record<string, unknown>): UITreasuryPro
     votesAgainst: Number(raw.against_votes ?? 0),
     creationTime: Number(raw.created_at ?? 0),
     isPrivate: !!raw.private,
+    hasVoted,
   }
 }
 
-/** All treasury withdrawal proposals (newest first), read live from the contract. */
+/** All treasury withdrawal proposals (newest first), read live from the contract, paginated. */
 export function useTreasuryProposals() {
   const { data: stats } = useQuery({
     queryKey: ['backendStats'],
@@ -538,18 +642,28 @@ export function useTreasuryProposals() {
   })
   const count = stats?.totalTreasuryProposals ?? 0
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['treasuryProposals', count],
-    enabled: isContractConfigured() && count > 0,
-    queryFn: () =>
-      fetchByIds(count, (id) => daoRead.getTreasuryProposal(id), mapTreasuryProposal),
-  })
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ['treasuryProposals', count],
+      enabled: isContractConfigured() && count > 0,
+      initialPageParam: 0,
+      queryFn: ({ pageParam }) =>
+        fetchProposalPage(count, pageParam, (id) => daoRead.getTreasuryProposal(id), mapTreasuryProposal),
+      getNextPageParam: (lastPage) => lastPage.nextOffset,
+    })
 
-  const proposals = useMemo(
-    () => [...(data ?? [])].sort((a, b) => b.id - a.id),
-    [data]
-  )
-  return { proposals, isLoading, count }
+  const proposals = useMemo(() => (data?.pages ?? []).flatMap((p) => p.items), [data])
+  const hasErrors = useMemo(() => (data?.pages ?? []).some((p) => p.hasErrors), [data])
+
+  return {
+    proposals,
+    isLoading,
+    count,
+    hasMore: !!hasNextPage,
+    loadMore: fetchNextPage,
+    isLoadingMore: isFetchingNextPage,
+    hasErrors,
+  }
 }
 
 // ---------------------------------------------------------------------------

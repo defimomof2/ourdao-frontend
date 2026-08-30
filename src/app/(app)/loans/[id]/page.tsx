@@ -47,7 +47,7 @@ export default function LoanDetailsPage() {
   const now = useNow()
 
   const loanId = parseInt(params.id as string)
-  const { proposal, isLoading } = useLoanProposal(loanId)
+  const { proposal, isLoading, refetch: refetchProposal } = useLoanProposal(loanId)
   // A LoanProposal only tracks the vote; the real disbursed Loan (due date,
   // repayment status) exists once the proposal is Approved (status 3), and
   // the contract guarantees it carries the same id as the proposal.
@@ -93,6 +93,7 @@ export default function LoanDetailsPage() {
 
   const handleVote = async (support: boolean) => {
     await voteOnProposal(loanId, support)
+    refetchProposal()
   }
 
   const handleRepayment = async () => {
@@ -141,6 +142,12 @@ export default function LoanDetailsPage() {
            proposal.borrower !== userData.address &&
            proposal.votingEndTime > Math.floor(now / 1000)
   }
+
+  const alreadyVoted =
+    userData.isMember &&
+    proposal.status === 2 &&
+    proposal.hasVoted &&
+    proposal.borrower !== userData.address
 
   const isBorrower = () => {
     return userData.address?.toLowerCase() === proposal.borrower.toLowerCase()
@@ -281,6 +288,18 @@ export default function LoanDetailsPage() {
                       {isVoting ? 'Voting...' : 'Vote Against'}
                     </Button>
                   </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {alreadyVoted && (
+              <Card>
+                <CardContent className="flex items-center gap-3 p-6">
+                  <CheckCircleIcon className="h-6 w-6 shrink-0 text-green-500 dark:text-green-400" />
+                  <p className="text-sm text-muted-foreground">
+                    You&apos;ve already voted on this proposal. A member can only vote once, so the
+                    controls are disabled.
+                  </p>
                 </CardContent>
               </Card>
             )}

@@ -17,11 +17,223 @@ import {
   ArrowLeft,
   FileText,
 } from 'lucide-react'
-import { useUserData, useVoting, useLoanProposals, type UILoanProposal } from '@/hooks/useDAO'
+import {
+  useUserData,
+  useVoting,
+  useLoanProposals,
+  useHasVoted,
+  type UILoanProposal,
+} from '@/hooks/useDAO'
 import { useNow } from '@/hooks/useNow'
 import { formatToken, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
 import { PageHeader } from '@/components/PageHeader'
+import type { UserData } from '@/types/dao'
+
+function getStatusIcon(status: number) {
+  switch (status) {
+    case 1: // IN_EDITING
+      return <Clock className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
+    case 2: // IN_VOTING
+      return <Clock className="h-5 w-5 text-blue-500 dark:text-blue-400" />
+    case 3: // APPROVED
+      return <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
+    case 4: // REJECTED
+      return <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />
+    default:
+      return <Clock className="h-5 w-5 text-muted-foreground" />
+  }
+}
+
+function getStatusColor(status: number) {
+  switch (status) {
+    case 1: return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950/30 dark:border-yellow-900'
+    case 2: return 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/30 dark:border-blue-900'
+    case 3: return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900'
+    case 4: return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/30 dark:border-red-900'
+    default: return 'text-muted-foreground bg-muted border-border'
+  }
+}
+
+function LoanProposalCard({
+  proposal,
+  now,
+  userData,
+  isPending,
+  onVote,
+}: {
+  proposal: UILoanProposal
+  now: number | null
+  userData: UserData
+  isPending: boolean
+  onVote: (proposalId: number, support: boolean) => Promise<unknown>
+}) {
+  // Only worth a contract read while the proposal can still be voted on.
+  const { hasVoted, refetch: refetchHasVoted } = useHasVoted(
+    'Loan',
+    proposal.id,
+    proposal.status === 2
+  )
+
+  const canVote =
+    now !== null &&
+    userData.isMember &&
+    proposal.status === 2 &&
+    !hasVoted &&
+    proposal.borrower !== userData.address &&
+    proposal.votingEndTime > Math.floor(now / 1000)
+
+  const alreadyVoted =
+    userData.isMember &&
+    proposal.status === 2 &&
+    hasVoted &&
+    proposal.borrower !== userData.address
+
+  const handleVoteClick = async (support: boolean) => {
+    await onVote(proposal.id, support)
+    refetchHasVoted()
+  }
+
+  return (
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div className="flex items-start space-x-3">
+            <div className="mt-1">
+              {getStatusIcon(proposal.status)}
+            </div>
+            <div>
+              <div className="flex items-center space-x-2 mb-2">
+                <CardTitle className="text-lg">
+                  Loan Proposal #{proposal.id}
+                </CardTitle>
+                {proposal.isPrivate && (
+                  <span title="Private Loan">
+                    <EyeOff className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  </span>
+                )}
+                {proposal.documentHash && (
+                  <span title="Has Documents">
+                    <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </span>
+                )}
+              </div>
+              <CardDescription>
+                By {formatAddress(proposal.borrower)} • Created {formatDate(proposal.creationTime)}
+              </CardDescription>
+            </div>
+          </div>
+          <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(proposal.status)}`}>
+            {PROPOSAL_STATUS_LABELS[proposal.status as keyof typeof PROPOSAL_STATUS_LABELS] || 'Unknown'}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <p className="text-sm text-muted-foreground">Amount Requested</p>
+            <p className="font-semibold">
+              {proposal.isPrivate ? 'Private' : formatToken(proposal.amount)}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Interest Rate</p>
+            <p className="font-semibold">{(proposal.interestRate / 100).toFixed(2)}% APR</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Votes For</p>
+            <p className="font-semibold text-green-600 dark:text-green-400">{proposal.votesFor}</p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Votes Against</p>
+            <p className="font-semibold text-red-600 dark:text-red-400">{proposal.votesAgainst}</p>
+          </div>
+        </div>
+
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">Purpose</p>
+          <p className="text-foreground">
+            {proposal.isPrivate ? 'Details are private' : proposal.purpose}
+          </p>
+        </div>
+
+        {/* Voting Progress */}
+        {proposal.status === 2 && (
+          <div>
+            <div className="flex justify-between text-sm text-muted-foreground mb-2">
+              <span>Voting Progress</span>
+              <span>
+                {proposal.votesFor + proposal.votesAgainst} votes •{' '}
+                {now === null
+                  ? '…'
+                  : `${Math.ceil((proposal.votingEndTime - Math.floor(now / 1000)) / 86400)} days left`}
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all"
+                style={{
+                  width: `${calculatePercentage(
+                    proposal.votesFor,
+                    proposal.votesFor + proposal.votesAgainst
+                  )}%`
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center justify-between pt-4">
+          <div className="flex space-x-2">
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/loans/${proposal.id}`}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </Link>
+            </Button>
+            {proposal.documentHash && (
+              <Button variant="outline" size="sm" disabled>
+                <FileText className="h-4 w-4 mr-2" />
+                Documents
+              </Button>
+            )}
+          </div>
+
+          {canVote && (
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleVoteClick(false)}
+                disabled={isPending}
+                className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
+              >
+                Vote Against
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleVoteClick(true)}
+                disabled={isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Vote For
+              </Button>
+            </div>
+          )}
+
+          {alreadyVoted && (
+            <div className="text-sm text-muted-foreground flex items-center">
+              <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 mr-1" />
+              You have voted
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function LoansPage() {
   const userData = useUserData()
@@ -71,40 +283,6 @@ export default function LoansPage() {
 
   const handleVote = async (proposalId: number, support: boolean) => {
     await voteOnProposal(proposalId, support)
-  }
-
-  const getStatusIcon = (status: number) => {
-    switch (status) {
-      case 1: // IN_EDITING
-        return <Clock className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
-      case 2: // IN_VOTING
-        return <Clock className="h-5 w-5 text-blue-500 dark:text-blue-400" />
-      case 3: // APPROVED
-        return <CheckCircle className="h-5 w-5 text-green-500 dark:text-green-400" />
-      case 4: // REJECTED
-        return <XCircle className="h-5 w-5 text-red-500 dark:text-red-400" />
-      default:
-        return <Clock className="h-5 w-5 text-muted-foreground" />
-    }
-  }
-
-  const getStatusColor = (status: number) => {
-    switch (status) {
-      case 1: return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-yellow-400 dark:bg-yellow-950/30 dark:border-yellow-900'
-      case 2: return 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-950/30 dark:border-blue-900'
-      case 3: return 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900'
-      case 4: return 'text-red-600 bg-red-50 border-red-200 dark:text-red-400 dark:bg-red-950/30 dark:border-red-900'
-      default: return 'text-muted-foreground bg-muted border-border'
-    }
-  }
-
-  const canVote = (proposal: UILoanProposal) => {
-    return now !== null &&
-           userData.isMember &&
-           proposal.status === 2 &&
-           !proposal.hasVoted &&
-           proposal.borrower !== userData.address &&
-           proposal.votingEndTime > Math.floor(now / 1000)
   }
 
   return (
@@ -286,143 +464,14 @@ export default function LoansPage() {
             </Card>
           ) : (
             filteredProposals.map((proposal) => (
-              <Card key={proposal.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="mt-1">
-                        {getStatusIcon(proposal.status)}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2 mb-2">
-                          <CardTitle className="text-lg">
-                            Loan Proposal #{proposal.id}
-                          </CardTitle>
-                          {proposal.isPrivate && (
-                            <span title="Private Loan">
-                              <EyeOff className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                            </span>
-                          )}
-                          {proposal.documentHash && (
-                            <span title="Has Documents">
-                              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                            </span>
-                          )}
-                        </div>
-                        <CardDescription>
-                          By {formatAddress(proposal.borrower)} • Created {formatDate(proposal.creationTime)}
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(proposal.status)}`}>
-                      {PROPOSAL_STATUS_LABELS[proposal.status as keyof typeof PROPOSAL_STATUS_LABELS] || 'Unknown'}
-                    </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Amount Requested</p>
-                      <p className="font-semibold">
-                        {proposal.isPrivate ? 'Private' : formatToken(proposal.amount)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Interest Rate</p>
-                      <p className="font-semibold">{(proposal.interestRate / 100).toFixed(2)}% APR</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Votes For</p>
-                      <p className="font-semibold text-green-600 dark:text-green-400">{proposal.votesFor}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Votes Against</p>
-                      <p className="font-semibold text-red-600 dark:text-red-400">{proposal.votesAgainst}</p>
-                    </div>
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">Purpose</p>
-                    <p className="text-foreground">
-                      {proposal.isPrivate ? 'Details are private' : proposal.purpose}
-                    </p>
-                  </div>
-
-                  {/* Voting Progress */}
-                  {proposal.status === 2 && (
-                    <div>
-                      <div className="flex justify-between text-sm text-muted-foreground mb-2">
-                        <span>Voting Progress</span>
-                        <span>
-                          {proposal.votesFor + proposal.votesAgainst} votes •{' '}
-                          {now === null
-                            ? '…'
-                            : `${Math.ceil((proposal.votingEndTime - Math.floor(now / 1000)) / 86400)} days left`}
-                        </span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full transition-all"
-                          style={{
-                            width: `${calculatePercentage(
-                              proposal.votesFor,
-                              proposal.votesFor + proposal.votesAgainst
-                            )}%`
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Actions */}
-                  <div className="flex items-center justify-between pt-4">
-                    <div className="flex space-x-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link href={`/loans/${proposal.id}`}>
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Link>
-                      </Button>
-                      {proposal.documentHash && (
-                        <Button variant="outline" size="sm" disabled>
-                          <FileText className="h-4 w-4 mr-2" />
-                          Documents
-                        </Button>
-                      )}
-                    </div>
-
-                    {canVote(proposal) && (
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleVote(proposal.id, false)}
-                          disabled={isPending}
-                          className="text-red-600 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
-                        >
-                          Vote Against
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleVote(proposal.id, true)}
-                          disabled={isPending}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          Vote For
-                        </Button>
-                      </div>
-                    )}
-
-                    {proposal.hasVoted && (
-                      <div className="text-sm text-muted-foreground flex items-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 dark:text-green-400 mr-1" />
-                        You have voted
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <LoanProposalCard
+                key={proposal.id}
+                proposal={proposal}
+                now={now}
+                userData={userData}
+                isPending={isPending}
+                onVote={handleVote}
+              />
             ))
           )}
           {!isLoading && hasMore && (

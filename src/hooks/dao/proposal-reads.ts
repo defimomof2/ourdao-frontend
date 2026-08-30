@@ -1,7 +1,7 @@
 'use client'
 
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useWallet } from '@/lib/wallet'
 import { isContractConfigured } from '@/lib/stellar'
 import { daoRead } from '@/lib/dao-client'
@@ -44,17 +44,44 @@ export function useLoanProposals() {
   }
 }
 
-/** A single loan proposal by id. */
+/** Whether the connected wallet has already voted (loan) or at least
+ *  committed (private treasury) on the given proposal — read directly from
+ *  the contract's `has_voted` view, never inferred from indexer events. */
+export function useHasVoted(kind: 'Loan' | 'Treasury', proposalId: number, enabled = true) {
+  const { address } = useWallet()
+  const { data, refetch } = useQuery({
+    queryKey: ['hasVoted', kind, proposalId, address],
+    enabled:
+      enabled &&
+      isContractConfigured() &&
+      !!address &&
+      Number.isFinite(proposalId) &&
+      proposalId >= 0,
+    queryFn: () => daoRead.hasVoted(kind, proposalId, address!),
+  })
+  return { hasVoted: !!data, refetch }
+}
+
+/** A single loan proposal by id, including the connected wallet's real
+ *  hasVoted state. */
 export function useLoanProposal(id: number) {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch: refetchProposal } = useQuery({
     queryKey: ['loanProposal', id],
     enabled: isContractConfigured() && Number.isFinite(id) && id >= 0,
-    queryFn: async () => {
-      const raw = await daoRead.getLoanProposal(id)
-      return raw ? mapLoanProposal(raw) : null
-    },
+    queryFn: () => daoRead.getLoanProposal(id),
   })
-  return { proposal: data ?? null, isLoading }
+  const { hasVoted, refetch: refetchHasVoted } = useHasVoted('Loan', id)
+
+  const proposal = useMemo(
+    () => (data ? mapLoanProposal(data, hasVoted) : null),
+    [data, hasVoted]
+  )
+
+  const refetch = useCallback(async () => {
+    await Promise.all([refetchProposal(), refetchHasVoted()])
+  }, [refetchProposal, refetchHasVoted])
+
+  return { proposal, isLoading, refetch }
 }
 
 /** The disbursed Loan for a given id, once its proposal has been approved.

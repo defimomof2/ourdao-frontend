@@ -23,9 +23,95 @@ import {
   useStaking,
   useTreasuryProposals,
   useTreasuryVoting,
+  useHasVoted,
+  type UITreasuryProposal,
 } from '@/hooks/useDAO'
 import { formatToken, formatAddress, parseToken } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
+
+function TreasuryProposalRow({
+  proposal: p,
+  canVote,
+  voting,
+  onVote,
+}: {
+  proposal: UITreasuryProposal
+  canVote: boolean
+  voting: boolean
+  onVote: (proposalId: number, support: boolean) => Promise<unknown>
+}) {
+  const { hasVoted, refetch } = useHasVoted('Treasury', p.id, p.status === 2 && !p.isPrivate)
+
+  return (
+    <li className="py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-foreground">{p.title}</p>
+            {p.isPrivate && (
+              <Badge variant="secondary" className="text-xs">
+                Private
+              </Badge>
+            )}
+          </div>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            {formatToken(p.amount)} → {formatAddress(p.recipient)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            For {p.votesFor} · Against {p.votesAgainst}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={
+              p.status === 5
+                ? 'default'
+                : p.status === 4
+                  ? 'destructive'
+                  : 'secondary'
+            }
+          >
+            {PROPOSAL_STATUS_LABELS[p.status as keyof typeof PROPOSAL_STATUS_LABELS]}
+          </Badge>
+          {canVote && p.status === 2 && !p.isPrivate && !hasVoted && (
+            <div className="flex gap-1" role="group" aria-label="Vote">
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={voting}
+                onClick={async () => {
+                  await onVote(p.id, true)
+                  refetch()
+                }}
+                aria-label="Vote for"
+              >
+                <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={voting}
+                onClick={async () => {
+                  await onVote(p.id, false)
+                  refetch()
+                }}
+                aria-label="Vote against"
+              >
+                <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
+              </Button>
+            </div>
+          )}
+          {canVote && p.status === 2 && !p.isPrivate && hasVoted && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              You&apos;ve voted
+            </div>
+          )}
+        </div>
+      </div>
+    </li>
+  )
+}
 
 function StatCard({
   label,
@@ -225,61 +311,13 @@ export default function TreasuryPage() {
             ) : (
               <ul className="divide-y divide-border">
                 {proposals.map((p) => (
-                  <li key={p.id} className="py-4">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{p.title}</p>
-                          {p.isPrivate && (
-                            <Badge variant="secondary" className="text-xs">
-                              Private
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                          {formatToken(p.amount)} → {formatAddress(p.recipient)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          For {p.votesFor} · Against {p.votesAgainst}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            p.status === 5
-                              ? 'default'
-                              : p.status === 4
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                        >
-                          {PROPOSAL_STATUS_LABELS[p.status as keyof typeof PROPOSAL_STATUS_LABELS]}
-                        </Badge>
-                        {canVote && p.status === 2 && !p.isPrivate && (
-                          <div className="flex gap-1" role="group" aria-label="Vote">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={voting}
-                              onClick={() => voteOnTreasury(p.id, true)}
-                              aria-label="Vote for"
-                            >
-                              <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={voting}
-                              onClick={() => voteOnTreasury(p.id, false)}
-                              aria-label="Vote against"
-                            >
-                              <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </li>
+                  <TreasuryProposalRow
+                    key={p.id}
+                    proposal={p}
+                    canVote={canVote}
+                    voting={voting}
+                    onVote={voteOnTreasury}
+                  />
                 ))}
               </ul>
             )}

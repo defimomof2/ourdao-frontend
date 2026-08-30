@@ -160,6 +160,15 @@ describe('mapLoanProposal', () => {
     expect(p.status).toBe(2)
     expect(p.votesFor).toBe(2)
   })
+
+  it('defaults hasVoted to false when no voter context is supplied', () => {
+    expect(mapLoanProposal({ id: 1 }).hasVoted).toBe(false)
+  })
+
+  it('passes through the real hasVoted value when supplied', () => {
+    expect(mapLoanProposal({ id: 1 }, true).hasVoted).toBe(true)
+    expect(mapLoanProposal({ id: 1 }, false).hasVoted).toBe(false)
+  })
 })
 
 describe('mapLoan', () => {
@@ -202,6 +211,19 @@ describe('mapTreasuryProposal', () => {
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Executed' }).status).toBe(5)
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Rejected' }).status).toBe(4)
     expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Pending' }).status).toBe(2)
+  })
+
+  it('defaults hasVoted to false when no voter context is supplied', () => {
+    expect(mapTreasuryProposal({ id: 1, amount: BigInt(1), destination: 'GD', status: 'Pending' }).hasVoted).toBe(false)
+  })
+
+  it('passes through the real hasVoted value, which the contract also sets for a committed-but-unrevealed private vote', () => {
+    const raw = { id: 1, amount: BigInt(1), destination: 'GD', status: 'Pending', private: true }
+    // The contract's has_voted view can't distinguish "committed" from
+    // "revealed" for a private proposal (see daoRead.hasVoted) — both map
+    // to hasVoted: true here, by design, rather than inventing a distinction.
+    expect(mapTreasuryProposal(raw, true).hasVoted).toBe(true)
+    expect(mapTreasuryProposal(raw, false).hasVoted).toBe(false)
   })
 })
 

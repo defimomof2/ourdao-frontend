@@ -23,6 +23,9 @@ import {
   useTreasuryProposals,
   useVoting,
   useTreasuryVoting,
+  useHasVoted,
+  type UILoanProposal,
+  type UITreasuryProposal,
 } from '@/hooks/useDAO'
 import { formatToken, formatAddress } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
@@ -66,6 +69,110 @@ function EmptyState({ label }: { label: string }) {
       <DocumentTextIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
       <p className="text-muted-foreground">{label}</p>
     </div>
+  )
+}
+
+function AlreadyVotedLabel() {
+  return (
+    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+      <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+      You&apos;ve voted
+    </div>
+  )
+}
+
+function LoanProposalRow({
+  proposal: p,
+  canVote,
+  votingLoan,
+  onVote,
+}: {
+  proposal: UILoanProposal
+  canVote: boolean
+  votingLoan: boolean
+  onVote: (proposalId: number, support: boolean) => Promise<unknown>
+}) {
+  const { hasVoted, refetch } = useHasVoted('Loan', p.id, p.status === 2)
+
+  return (
+    <li className="flex flex-wrap items-start justify-between gap-3 py-4">
+      <div className="min-w-0">
+        <Link
+          href={`/loans/${p.id}`}
+          className="font-medium text-foreground hover:text-primary-700 dark:hover:text-primary-400"
+        >
+          Loan Proposal #{p.id}
+        </Link>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {formatToken(p.amount)} · {(p.interestRate / 100).toFixed(1)}% ·{' '}
+          {formatAddress(p.borrower)}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          For {p.votesFor} · Against {p.votesAgainst}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <StatusBadge status={p.status} />
+        {canVote && p.status === 2 && !hasVoted && (
+          <VoteButtons
+            disabled={votingLoan}
+            onVote={async (s) => {
+              await onVote(p.id, s)
+              refetch()
+            }}
+          />
+        )}
+        {canVote && p.status === 2 && hasVoted && <AlreadyVotedLabel />}
+      </div>
+    </li>
+  )
+}
+
+function TreasuryProposalRow({
+  proposal: p,
+  canVote,
+  votingTreasury,
+  onVote,
+}: {
+  proposal: UITreasuryProposal
+  canVote: boolean
+  votingTreasury: boolean
+  onVote: (proposalId: number, support: boolean) => Promise<unknown>
+}) {
+  const { hasVoted, refetch } = useHasVoted('Treasury', p.id, p.status === 2 && !p.isPrivate)
+
+  return (
+    <li className="flex flex-wrap items-start justify-between gap-3 py-4">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <p className="font-medium text-foreground">{p.title}</p>
+          {p.isPrivate && (
+            <Badge variant="secondary" className="text-xs">
+              Private
+            </Badge>
+          )}
+        </div>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {formatToken(p.amount)} → {formatAddress(p.recipient)}
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          For {p.votesFor} · Against {p.votesAgainst}
+        </p>
+      </div>
+      <div className="flex items-center gap-2">
+        <StatusBadge status={p.status} />
+        {canVote && p.status === 2 && !p.isPrivate && !hasVoted && (
+          <VoteButtons
+            disabled={votingTreasury}
+            onVote={async (s) => {
+              await onVote(p.id, s)
+              refetch()
+            }}
+          />
+        )}
+        {canVote && p.status === 2 && !p.isPrivate && hasVoted && <AlreadyVotedLabel />}
+      </div>
+    </li>
   )
 }
 
@@ -222,32 +329,13 @@ export default function GovernancePage() {
               ) : (
                 <ul className="divide-y divide-border">
                   {loanProposals.map((p) => (
-                    <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
-                      <div className="min-w-0">
-                        <Link
-                          href={`/loans/${p.id}`}
-                          className="font-medium text-foreground hover:text-primary-700 dark:hover:text-primary-400"
-                        >
-                          Loan Proposal #{p.id}
-                        </Link>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                          {formatToken(p.amount)} · {(p.interestRate / 100).toFixed(1)}% ·{' '}
-                          {formatAddress(p.borrower)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          For {p.votesFor} · Against {p.votesAgainst}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={p.status} />
-                        {userData.isMember && p.status === 2 && (
-                          <VoteButtons
-                            disabled={votingLoan}
-                            onVote={(s) => voteOnProposal(p.id, s)}
-                          />
-                        )}
-                      </div>
-                    </li>
+                    <LoanProposalRow
+                      key={p.id}
+                      proposal={p}
+                      canVote={userData.isMember}
+                      votingLoan={votingLoan}
+                      onVote={voteOnProposal}
+                    />
                   ))}
                 </ul>
               )}
@@ -284,33 +372,13 @@ export default function GovernancePage() {
               ) : (
                 <ul className="divide-y divide-border">
                   {treasuryProposals.map((p) => (
-                    <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-foreground">{p.title}</p>
-                          {p.isPrivate && (
-                            <Badge variant="secondary" className="text-xs">
-                              Private
-                            </Badge>
-                          )}
-                        </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                          {formatToken(p.amount)} → {formatAddress(p.recipient)}
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          For {p.votesFor} · Against {p.votesAgainst}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <StatusBadge status={p.status} />
-                        {userData.isMember && p.status === 2 && !p.isPrivate && (
-                          <VoteButtons
-                            disabled={votingTreasury}
-                            onVote={(s) => voteOnTreasury(p.id, s)}
-                          />
-                        )}
-                      </div>
-                    </li>
+                    <TreasuryProposalRow
+                      key={p.id}
+                      proposal={p}
+                      canVote={userData.isMember}
+                      votingTreasury={votingTreasury}
+                      onVote={voteOnTreasury}
+                    />
                   ))}
                 </ul>
               )}

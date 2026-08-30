@@ -209,6 +209,13 @@ export const daoRead = {
   nameOf: (addr: string) => read<string | null>('name_of', sc.addr(addr)),
   getDocument: (kind: 'Loan' | 'Treasury', id: number) =>
     read<Uint8Array | null>('get_document', sc.proposalKind(kind), sc.u32(id)),
+  // For a private (commit-reveal) treasury proposal this is true as soon as
+  // `voter` has committed, not only once revealed — the contract folds both
+  // into one bool since a commitment already blocks a second vote. There is
+  // no separate view to tell "committed, not yet revealed" apart from
+  // "fully voted".
+  hasVoted: (kind: 'Loan' | 'Treasury', proposalId: number, voter: string) =>
+    read<boolean>('has_voted', sc.proposalKind(kind), sc.u32(proposalId), sc.addr(voter)),
 }
 
 // ---------------------------------------------------------------------------

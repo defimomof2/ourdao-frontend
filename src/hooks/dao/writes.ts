@@ -92,11 +92,12 @@ export function useLoanRequest() {
 }
 
 export function useVoting() {
-  const { run, isPending, isSuccess, error } = useWriteAction()
+  const { run, isPending, isSuccess, error, address } = useWriteAction()
   const voteOnProposal = (proposalId: number, support: boolean) =>
     run('Casting vote', (w) => w.voteOnLoanProposal(proposalId, support), [
       ['loanProposal', proposalId],
       ['loanProposals'],
+      ['hasVoted', 'Loan', proposalId, address],
       // A vote can push a proposal past quorum and trigger disbursement in
       // the same transaction, moving the treasury balance.
       ['daoStats'],
@@ -152,10 +153,11 @@ export function useStaking() {
 }
 
 export function useTreasuryVoting() {
-  const { run, isPending, isSuccess, error } = useWriteAction()
+  const { run, isPending, isSuccess, error, address } = useWriteAction()
   const voteOnTreasury = (proposalId: number, support: boolean) =>
     run('Casting vote', (w) => w.voteOnTreasuryProposal(proposalId, support), [
       ['treasuryProposals'],
+      ['hasVoted', 'Treasury', proposalId, address],
       // A vote can push a proposal past quorum and execute the withdrawal in
       // the same transaction, moving the treasury balance.
       ['daoStats'],
