@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, act } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useLoanRequest, useAttachDocument } from '@/hooks/useDAO'
 
 const mockRequestLoan = vi.fn()
@@ -36,6 +37,11 @@ function AttachHarness({ onRender }: { onRender: (h: ReturnType<typeof useAttach
   return null
 }
 
+function renderWithClient(ui: React.ReactElement) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>)
+}
+
 describe('useLoanRequest', () => {
   beforeEach(() => vi.clearAllMocks())
   afterEach(() => vi.clearAllMocks())
@@ -43,7 +49,7 @@ describe('useLoanRequest', () => {
   it('takes only an amount and resolves to the on-chain proposal id, not the raw invoke result', async () => {
     mockRequestLoan.mockResolvedValue({ hash: 'txhash', returnValue: 7 })
     let latest: ReturnType<typeof useLoanRequest> | undefined
-    render(<LoanRequestHarness onRender={(h) => { latest = h }} />)
+    renderWithClient(<LoanRequestHarness onRender={(h) => { latest = h }} />)
 
     let resolved: number | undefined
     await act(async () => {
@@ -61,7 +67,7 @@ describe('useAttachDocument', () => {
   it('encodes the content hash and targets the given proposal kind/id', async () => {
     mockAttachDocument.mockResolvedValue({ hash: 'txhash', returnValue: null })
     let latest: ReturnType<typeof useAttachDocument> | undefined
-    render(<AttachHarness onRender={(h) => { latest = h }} />)
+    renderWithClient(<AttachHarness onRender={(h) => { latest = h }} />)
 
     await act(async () => {
       await latest!.attach('Loan', 42, 'QmTestHash')
@@ -77,7 +83,7 @@ describe('useAttachDocument', () => {
   it('rejects when the attach call fails, surfacing the underlying error to the caller', async () => {
     mockAttachDocument.mockRejectedValue(new Error('boom'))
     let latest: ReturnType<typeof useAttachDocument> | undefined
-    render(<AttachHarness onRender={(h) => { latest = h }} />)
+    renderWithClient(<AttachHarness onRender={(h) => { latest = h }} />)
 
     await expect(
       act(async () => {
