@@ -49,11 +49,11 @@ function VoteButtons({
   onVote: (support: boolean) => void
 }) {
   return (
-    <div className="flex gap-1">
-      <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(true)}>
+    <div className="flex gap-1" role="group" aria-label="Vote">
+      <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(true)} aria-label="Vote for">
         <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
       </Button>
-      <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(false)}>
+      <Button size="sm" variant="outline" disabled={disabled} onClick={() => onVote(false)} aria-label="Vote against">
         <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
       </Button>
     </div>

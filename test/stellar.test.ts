@@ -42,7 +42,7 @@ describe('stellar explorer URL helpers', () => {
 
 describe('isStellarAddress', () => {
   // Canonical Stellar addresses are uppercase base32: G or C + 55 chars [A-Z0-9]
-  const validG = 'GAHJJJKMOKYE4RVPZEWZTKH5FVI4PA3VL7GK2LFNUBSGBV3MQAXRWUD'
+  const validG = 'GAHJJJKMOKYE4RVPZEWZTKH5FVI4PA3VL7GK2LFNUBSGBV3MQAXRWUDX'
   const validC = 'CA7QYNF7SOWQ3GLR2BGMZEHXR73EWBMGM7OPKJNNOHHEJLBSXMZPQNUD'
 
   it('returns true for a canonical G-prefixed account address', () => {

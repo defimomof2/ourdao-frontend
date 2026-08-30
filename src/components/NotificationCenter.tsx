@@ -129,6 +129,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
           <div 
             className="fixed inset-0 z-40 bg-black/20"
             onClick={() => setIsOpen(false)}
+            onKeyDown={(e) => { if (e.key === 'Escape') setIsOpen(false) }}
+            role="button"
+            tabIndex={-1}
+            aria-hidden="true"
           />
           
           {/* Panel */}
@@ -201,14 +205,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                         <button
                           onClick={markAllAsRead}
                           className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                          title="Mark all as read"
+                          aria-label="Mark all as read"
                         >
                           <CheckCheck className="w-4 h-4" />
                         </button>
                         <button
                           onClick={clearAllNotifications}
-                          className="text-xs text-muted-foreground hover:text-foreground"
-                          title="Clear all"
+                          className="text-xs text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                          aria-label="Clear all notifications"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -265,6 +269,17 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                             setIsOpen(false)
                           }
                         }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            markAsRead(notification.id)
+                            if (notification.actionUrl) {
+                              window.location.href = notification.actionUrl
+                              setIsOpen(false)
+                            }
+                          }
+                        }}
+                        role="button"
+                        tabIndex={0}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
@@ -292,7 +307,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ className = '' 
                                     markAsRead(notification.id)
                                   }}
                                   className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                                  title="Mark as read"
+                                  aria-label="Mark as read"
                                 >
                                   <Check className="w-3 h-3" />
                                 </button>

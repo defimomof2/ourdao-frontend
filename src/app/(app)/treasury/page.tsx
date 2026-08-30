@@ -154,10 +154,11 @@ export default function TreasuryPage() {
               separately from the treasury and can be withdrawn at any time.
             </p>
             <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">
+              <label htmlFor="stake-amount" className="mb-1 block text-sm font-medium text-foreground">
                 Amount
               </label>
               <input
+                id="stake-amount"
                 type="number"
                 min="0"
                 step="any"
@@ -255,12 +256,13 @@ export default function TreasuryPage() {
                           {PROPOSAL_STATUS_LABELS[p.status as keyof typeof PROPOSAL_STATUS_LABELS]}
                         </Badge>
                         {canVote && p.status === 2 && !p.isPrivate && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-1" role="group" aria-label="Vote">
                             <Button
                               size="sm"
                               variant="outline"
                               disabled={voting}
                               onClick={() => voteOnTreasury(p.id, true)}
+                              aria-label="Vote for"
                             >
                               <CheckIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                             </Button>
@@ -269,6 +271,7 @@ export default function TreasuryPage() {
                               variant="outline"
                               disabled={voting}
                               onClick={() => voteOnTreasury(p.id, false)}
+                              aria-label="Vote against"
                             >
                               <XMarkIcon className="h-4 w-4 text-red-600 dark:text-red-400" />
                             </Button>

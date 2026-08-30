@@ -86,6 +86,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // user can switch networks in the extension without reloading the app.
   useEffect(() => {
     if (!address) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- resetting derived wallet state on disconnect is a legitimate sync pattern
       setWalletNetworkPassphrase(null)
       setWalletNetwork(null)
       return

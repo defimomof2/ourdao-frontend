@@ -154,6 +154,10 @@ export function AppShell({ children }: AppShellProps) {
             <div
               className="absolute inset-0 bg-black/40"
               onClick={() => setMobileOpen(false)}
+              onKeyDown={(e) => { if (e.key === 'Escape') setMobileOpen(false) }}
+              role="button"
+              tabIndex={-1}
+              aria-hidden="true"
             />
             <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-card py-4 shadow-xl">
               <div className="mb-2 flex items-center justify-between px-4">

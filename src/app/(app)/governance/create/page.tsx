@@ -102,10 +102,11 @@ export default function CreateProposalPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">
+                <label htmlFor="proposal-amount" className="mb-1 block text-sm font-medium text-foreground">
                   Amount
                 </label>
                 <input
+                  id="proposal-amount"
                   type="number"
                   min="0"
                   step="any"
@@ -118,10 +119,11 @@ export default function CreateProposalPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">
+                <label htmlFor="proposal-destination" className="mb-1 block text-sm font-medium text-foreground">
                   Destination address
                 </label>
                 <input
+                  id="proposal-destination"
                   type="text"
                   value={form.destination}
                   onChange={(e) => set('destination', e.target.value)}
@@ -132,10 +134,11 @@ export default function CreateProposalPage() {
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-foreground">
+                <label htmlFor="proposal-reason" className="mb-1 block text-sm font-medium text-foreground">
                   Reason
                 </label>
                 <textarea
+                  id="proposal-reason"
                   rows={4}
                   value={form.reason}
                   onChange={(e) => set('reason', e.target.value)}
@@ -144,24 +147,25 @@ export default function CreateProposalPage() {
                 />
               </div>
 
-              <label className="flex items-start gap-3 rounded-lg border border-border p-4">
+              <div className="flex items-start gap-3 rounded-lg border border-border p-4">
                 <input
+                  id="proposal-private"
                   type="checkbox"
                   checked={form.isPrivate}
                   onChange={(e) => set('isPrivate', e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-input text-primary-600 focus:ring-primary-500"
                 />
-                <span className="text-sm">
+                <label htmlFor="proposal-private" className="flex flex-col gap-0.5 text-sm">
                   <span className="flex items-center gap-1.5 font-medium text-foreground">
                     <EyeSlashIcon className="h-4 w-4" />
                     Private voting (commit-reveal)
                   </span>
-                  <span className="mt-0.5 block text-muted-foreground">
+                  <span className="text-muted-foreground">
                     Members submit a hidden vote first, then reveal it — no one
                     sees the tally influence others while voting is open.
                   </span>
-                </span>
-              </label>
+                </label>
+              </div>
 
               <div className="flex items-start gap-2 rounded-lg bg-primary-50 p-3 text-sm text-primary-800">
                 <InformationCircleIcon className="mt-0.5 h-5 w-5 shrink-0" />
