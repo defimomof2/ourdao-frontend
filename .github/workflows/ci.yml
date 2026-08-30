@@ -87,6 +87,23 @@ jobs:
         continue-on-error: true
         run: npm run audit
 
+  # Separate from lint for the same reason as `audit`: a package going unused
+  # (or a new one landing without being wired up) isn't something the PR that
+  # triggers it necessarily touched, so it's kept off `status`'s needs rather
+  # than folded into an existing required job.
+  depcheck:
+    name: Unused dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run depcheck
+
   # Compares the client JS/CSS actually shipped (.next/static) against the
   # latest baseline captured from main, so a PR's effect on bundle size is
   # visible instead of invisible until someone notices the app got slower.
