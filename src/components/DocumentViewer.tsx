@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DocumentIcon,
   EyeIcon,
@@ -12,7 +12,8 @@ import {
   XMarkIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { DocumentMetadata, downloadFromIPFS, getIPFSUrl, canAccessDocument } from '@/lib/ipfs'
+import { DocumentMetadata, getIPFSUrl, canAccessDocument } from '@/lib/ipfs'
+import { useDocumentContent } from '@/hooks/useDocument'
 
 interface DocumentViewerProps {
   doc: DocumentMetadata
@@ -31,66 +32,28 @@ export default function DocumentViewer({
   onError,
   className = ''
 }: DocumentViewerProps) {
-  const [content, setContent] = useState<Uint8Array | null>(null)
-  const [loading, setLoading] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [decrypted, setDecrypted] = useState(false)
-  const [error, setError] = useState('')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState('')
 
   // Check if user has access
   const hasAccess = canAccessDocument(doc, userAddress, userRoles)
 
-  const loadDocument = async (decryptPassword?: string) => {
-    if (!hasAccess) {
-      setError('You do not have permission to view this doc')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const result = await downloadFromIPFS(
-        doc.hash,
-        doc.encrypted,
-        decryptPassword
-      )
-
-      setContent(result.content)
-      setDecrypted(result.decrypted)
-
-      // Create preview URL for supported file types
-      if (result.content) {
-        // TS's Uint8Array is generic over its buffer type as of TS 5.7+;
-        // BlobPart requires an ArrayBuffer-backed one specifically, so copy
-        // into a fresh Uint8Array to satisfy that (no behavior change).
-        const blob = new Blob([new Uint8Array(result.content)], { type: doc.type })
-        const url = URL.createObjectURL(blob)
-        setPreviewUrl(url)
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load doc'
-      setError(errorMsg)
-      onError?.(errorMsg)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { content, loading, error: loadError, decrypted, previewUrl, decrypt } =
+    useDocumentContent(doc, userAddress, userRoles)
+  const error = passwordError || loadError
 
   useEffect(() => {
-    if (hasAccess && !doc.encrypted) {
-      loadDocument()
-    }
-  }, [hasAccess, doc.hash])
+    if (loadError) onError?.(loadError)
+  }, [loadError, onError])
 
   const handleDecrypt = () => {
     if (!password.trim()) {
-      setError('Password is required to decrypt this doc')
+      setPasswordError('Password is required to decrypt this doc')
       return
     }
-    loadDocument(password)
+    setPasswordError('')
+    decrypt(password)
   }
 
   const downloadDocument = () => {
