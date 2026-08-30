@@ -18,12 +18,12 @@ export default function PrivacyPage() {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
+          <div className="bg-card rounded-lg p-6 text-center">
             <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h2 className="text-xl font-semibold text-foreground mb-2">
               Wallet Not Connected
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-muted-foreground">
               Please connect your wallet to view privacy features.
             </p>
           </div>
@@ -41,16 +41,16 @@ export default function PrivacyPage() {
       subtitle="What's actually private on-chain, and how to use it."
     >
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-lg p-6 border border-border">
           <div className="flex items-start space-x-4">
             <div className="p-2 rounded-full bg-purple-100 dark:bg-purple-900/30">
               <EyeSlashIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Commit-reveal private treasury voting
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 Treasury withdrawal proposals can be created as <strong>private</strong>. Votes on
                 a private proposal are first submitted as a hidden commitment (a hash of your
                 choice + a secret salt), then revealed later — so no one, including other voters,
@@ -67,16 +67,16 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-lg p-6 border border-border">
           <div className="flex items-start space-x-4">
             <div className="p-2 rounded-full bg-blue-100 dark:bg-blue-900/30">
               <LockClosedIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Document encryption
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-muted-foreground mt-1">
                 When attaching supporting documents to a loan or treasury proposal, you can
                 encrypt them client-side (AES-GCM, password-derived key) before upload — the
                 contract only ever stores a content hash, never the document itself or your
@@ -86,22 +86,22 @@ export default function PrivacyPage() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-            <ShieldCheckIcon className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+        <div className="bg-card rounded-lg p-6 border border-border">
+          <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+            <ShieldCheckIcon className="h-5 w-5 text-muted-foreground" />
             Treasury proposal privacy, DAO-wide
           </h3>
           {isLoading ? (
-            <p className="text-sm text-gray-500 dark:text-gray-400">Loading…</p>
+            <p className="text-sm text-muted-foreground">Loading…</p>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{privateCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Private proposals</div>
+                <div className="text-sm text-muted-foreground">Private proposals</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-gray-600 dark:text-gray-300">{publicCount}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">Public proposals</div>
+                <div className="text-2xl font-bold text-foreground">{publicCount}</div>
+                <div className="text-sm text-muted-foreground">Public proposals</div>
               </div>
             </div>
           )}
