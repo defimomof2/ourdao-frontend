@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor, fireEvent } from '@testing-library/react'
 import { renderWithProviders } from './test-utils'
-import GovernancePage from '@/app/governance/page'
-import CreateProposalPage from '@/app/governance/create/page'
+import GovernancePage from '@/app/(app)/governance/page'
+import CreateProposalPage from '@/app/(app)/governance/create/page'
 
 const mockIsMember = vi.fn()
 const mockIsAdmin = vi.fn()
