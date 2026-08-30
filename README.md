@@ -83,8 +83,14 @@ Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/
 
 ```
 src/
-  app/            # Next.js App Router pages (one folder per route above)
-  components/     # Shared UI: AppShell (header/sidebar), ConnectButton, NotificationCenter,
+  app/
+    (app)/        # Shell-wrapped routes (dashboard, loans, governance, treasury,
+                  # admin, privacy) sharing (app)/layout.tsx. Route groups are
+                  # parenthesised and don't affect the URL.
+    register/     # Standalone route, own header (see below)
+    page.tsx      # Landing page, at the root, own header (see below)
+  components/     # Shared UI: AppShell (header/sidebar), PageHeader (per-page
+                  # title/subtitle/actions), ConnectButton, NotificationCenter,
                   # ThemeToggle, DocumentUpload, and the shadcn/ui-derived primitives in ui/
   hooks/          # useDAO.ts (contract reads/writes as React Query hooks),
                   # useNotifications.ts (backend-polled notifications + activity feed),
@@ -93,7 +99,7 @@ src/
   types/          # Shared TypeScript types
 ```
 
-`AppShell` (header + sidebar navigation) is rendered by each page individually rather than being a Next.js `layout.tsx` — every page wraps its content in `<AppShell>` instead of hand-rolling its own chrome. The landing page and `/register` are the exceptions, with their own standalone headers since they're meant to work before a user has any DAO context.
+`AppShell` (header + sidebar navigation) is rendered once by `(app)/layout.tsx`, so it persists across navigation within that group instead of remounting per page. Pages under `(app)/` render `<PageHeader title=... subtitle=... actions={...} />` for their own title block — a layout only renders `{children}`, so it can't take page-specific props the way the old per-page `<AppShell>` wrapper did. The landing page and `/register` stay outside the group, with their own standalone headers, since they're meant to work before a user has any DAO context.
 
 Data flows through [TanStack Query](https://tanstack.com/query) throughout: `useDAO.ts`'s hooks wrap live Soroban contract reads (the contract itself has no queryable lists, so proposal/loan enumeration counts come from the indexer, then each item is fetched live by id straight from the contract — the count is an off-chain hint, the data is always on-chain-sourced) and Freighter-signed writes; `useNotifications.ts` wraps the backend's polled REST endpoints.
 

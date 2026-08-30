@@ -18,7 +18,7 @@ import {
   useAdminLog,
 } from '@/hooks/useDAO'
 import { formatToken, formatAddress, formatDate } from '@/lib/utils'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 type Tab = 'overview' | 'governance' | 'activity'
 
@@ -35,30 +35,27 @@ export default function AdminPage() {
 
   if (!userData.isConnected) {
     return (
-      <AppShell>
-        <GuardMessage
-          icon={<ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />}
-          title="Wallet Not Connected"
-          message="Please connect your wallet to access the admin panel."
-        />
-      </AppShell>
+      <GuardMessage
+        icon={<ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />}
+        title="Wallet Not Connected"
+        message="Please connect your wallet to access the admin panel."
+      />
     )
   }
 
   if (!userData.isAdmin) {
     return (
-      <AppShell>
-        <GuardMessage
-          icon={<ExclamationTriangleIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />}
-          title="Access Denied"
-          message="You need admin privileges to access this panel."
-        />
-      </AppShell>
+      <GuardMessage
+        icon={<ExclamationTriangleIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />}
+        title="Access Denied"
+        message="You need admin privileges to access this panel."
+      />
     )
   }
 
   return (
-    <AppShell title="Admin Dashboard" subtitle="Real-time DAO governance and system state.">
+    <>
+      <PageHeader title="Admin Dashboard" subtitle="Real-time DAO governance and system state." />
       <div className="max-w-7xl mx-auto">
         <div className="bg-card rounded-lg shadow border border-border">
           <div className="border-b border-border">
@@ -86,7 +83,7 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }
 

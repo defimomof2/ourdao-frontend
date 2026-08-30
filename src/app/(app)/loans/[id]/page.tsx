@@ -34,7 +34,7 @@ import { useNow } from '@/hooks/useNow'
 import { formatToken, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS, IPFS_GATEWAY } from '@/constants'
 import toast from 'react-hot-toast'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function LoanDetailsPage() {
   const params = useParams()
@@ -68,18 +68,15 @@ export default function LoanDetailsPage() {
 
   if (isLoading) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="skeleton h-40 w-full max-w-2xl rounded-xl" />
-        </div>
-      </AppShell>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="skeleton h-40 w-full max-w-2xl rounded-xl" />
+      </div>
     )
   }
 
   if (!proposal) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <XCircleIcon className="h-12 w-12 text-red-500 dark:text-red-400 mx-auto mb-4" />
@@ -91,7 +88,6 @@ export default function LoanDetailsPage() {
           </CardContent>
         </Card>
       </div>
-      </AppShell>
     )
   }
 
@@ -163,17 +159,18 @@ export default function LoanDetailsPage() {
   const quorumProgress = calculatePercentage(totalVotes, activeMembers)
 
   return (
-    <AppShell
-      title={`Loan Proposal #${proposal.id}`}
-      actions={
-        <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(proposal.status)}`}>
-          <div className="flex items-center space-x-1">
-            {getStatusIcon(proposal.status)}
-            <span>{PROPOSAL_STATUS_LABELS[proposal.status as keyof typeof PROPOSAL_STATUS_LABELS]}</span>
+    <>
+      <PageHeader
+        title={`Loan Proposal #${proposal.id}`}
+        actions={
+          <div className={`px-3 py-1 rounded-full border text-sm font-medium ${getStatusColor(proposal.status)}`}>
+            <div className="flex items-center space-x-1">
+              {getStatusIcon(proposal.status)}
+              <span>{PROPOSAL_STATUS_LABELS[proposal.status as keyof typeof PROPOSAL_STATUS_LABELS]}</span>
+            </div>
           </div>
-        </div>
-      }
-    >
+        }
+      />
       <div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
@@ -488,6 +485,6 @@ export default function LoanDetailsPage() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }

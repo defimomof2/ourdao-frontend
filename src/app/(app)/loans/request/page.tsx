@@ -38,7 +38,7 @@ interface DocumentMetadata {
   }
 }
 import toast from 'react-hot-toast'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function RequestLoanPage() {
   const router = useRouter()
@@ -391,8 +391,7 @@ export default function RequestLoanPage() {
 
   if (!userData.isConnected || !userData.isMember) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Access Restricted</CardTitle>
@@ -409,12 +408,12 @@ export default function RequestLoanPage() {
           </CardContent>
         </Card>
       </div>
-      </AppShell>
     )
   }
 
   return (
-    <AppShell title="Request a Loan" subtitle="Tell the DAO what you need">
+    <>
+      <PageHeader title="Request a Loan" subtitle="Tell the DAO what you need" />
       <div className="max-w-2xl mx-auto">
 
         <Card>
@@ -470,6 +469,6 @@ export default function RequestLoanPage() {
           </Card>
         )}
       </div>
-    </AppShell>
+    </>
   )
 }

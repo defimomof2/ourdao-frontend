@@ -21,7 +21,7 @@ import { formatToken, formatDate, formatAddress } from '@/lib/utils'
 import { MEMBER_STATUS_LABELS } from '@/constants'
 import toast from 'react-hot-toast'
 import { useIsMobile, useResponsiveCardLayout } from '@/lib/responsive'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function DashboardPage() {
   const router = useRouter()
@@ -54,8 +54,7 @@ export default function DashboardPage() {
 
   if (!userData.isConnected) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Access Dashboard</CardTitle>
@@ -79,14 +78,12 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      </AppShell>
     )
   }
 
   if (!userData.isMember) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle>Not a Member</CardTitle>
@@ -108,7 +105,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-      </AppShell>
     )
   }
 
@@ -161,10 +157,11 @@ export default function DashboardPage() {
   const memberStatusBg = userData.member?.status === 1 ? 'bg-green-50' : 'bg-muted'
 
   return (
-    <AppShell
-      title="Member Dashboard"
-      subtitle="Your membership, rewards, and activity at a glance"
-    >
+    <>
+      <PageHeader
+        title="Member Dashboard"
+        subtitle="Your membership, rewards, and activity at a glance"
+      />
         {/* Member Status */}
         <div className="mb-8">
           <Card>
@@ -424,6 +421,6 @@ export default function DashboardPage() {
             </Card>
           </div>
         </div>
-    </AppShell>
+    </>
   )
 }

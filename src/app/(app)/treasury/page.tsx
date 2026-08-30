@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -65,21 +65,19 @@ export default function TreasuryPage() {
 
   if (!userData.isConnected) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6 text-center">
-              <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-lg font-medium text-foreground">
-                Connect Your Wallet
-              </h3>
-              <p className="text-muted-foreground">
-                Please connect your wallet to access the treasury.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppShell>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <BanknotesIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-medium text-foreground">
+              Connect Your Wallet
+            </h3>
+            <p className="text-muted-foreground">
+              Please connect your wallet to access the treasury.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -108,10 +106,11 @@ export default function TreasuryPage() {
   const canVote = userData.isMember
 
   return (
-    <AppShell
-      title="Treasury & Staking"
-      subtitle="DAO funds, member staking, and treasury withdrawals"
-    >
+    <>
+      <PageHeader
+        title="Treasury & Staking"
+        subtitle="DAO funds, member staking, and treasury withdrawals"
+      />
       {/* Overview */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -291,6 +290,6 @@ export default function TreasuryPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </>
   )
 }

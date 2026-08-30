@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 import {
   Card,
   CardContent,
@@ -40,21 +40,19 @@ export default function CreateProposalPage() {
 
   if (!userData.isConnected || !userData.isMember) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6 text-center">
-              <ExclamationTriangleIcon className="mx-auto mb-4 h-12 w-12 text-amber-500 dark:text-amber-400" />
-              <h3 className="mb-2 text-lg font-medium text-foreground">
-                Member Only
-              </h3>
-              <p className="text-muted-foreground">
-                Only DAO members can create governance proposals.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppShell>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <ExclamationTriangleIcon className="mx-auto mb-4 h-12 w-12 text-amber-500 dark:text-amber-400" />
+            <h3 className="mb-2 text-lg font-medium text-foreground">
+              Member Only
+            </h3>
+            <p className="text-muted-foreground">
+              Only DAO members can create governance proposals.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -84,10 +82,11 @@ export default function CreateProposalPage() {
   }
 
   return (
-    <AppShell
-      title="Create Proposal"
-      subtitle="Propose a treasury withdrawal for members to vote on"
-    >
+    <>
+      <PageHeader
+        title="Create Proposal"
+        subtitle="Propose a treasury withdrawal for members to vote on"
+      />
       <div className="max-w-2xl">
         <Card>
           <CardHeader>
@@ -188,6 +187,6 @@ export default function CreateProposalPage() {
           </CardContent>
         </Card>
       </div>
-    </AppShell>
+    </>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -129,21 +129,19 @@ export default function GovernancePage() {
 
   if (!userData.isConnected) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <Card className="w-full max-w-md">
-            <CardContent className="p-6 text-center">
-              <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-lg font-medium text-foreground">
-                Connect Your Wallet
-              </h3>
-              <p className="text-muted-foreground">
-                Please connect your wallet to access governance.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </AppShell>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-6 text-center">
+            <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <h3 className="mb-2 text-lg font-medium text-foreground">
+              Connect Your Wallet
+            </h3>
+            <p className="text-muted-foreground">
+              Please connect your wallet to access governance.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
@@ -153,20 +151,21 @@ export default function GovernancePage() {
     treasuryProposals.filter((p) => p.status === 2).length
 
   return (
-    <AppShell
-      title="Governance"
-      subtitle="Vote on loan requests and treasury withdrawals"
-      actions={
-        userData.isMember ? (
-          <Button asChild size="sm">
-            <Link href="/governance/create">
-              <DocumentPlusIcon className="mr-2 h-4 w-4" />
-              Create Proposal
-            </Link>
-          </Button>
-        ) : undefined
-      }
-    >
+    <>
+      <PageHeader
+        title="Governance"
+        subtitle="Vote on loan requests and treasury withdrawals"
+        actions={
+          userData.isMember ? (
+            <Button asChild size="sm">
+              <Link href="/governance/create">
+                <DocumentPlusIcon className="mr-2 h-4 w-4" />
+                Create Proposal
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
       {/* Overview */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
@@ -326,6 +325,6 @@ export default function GovernancePage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </AppShell>
+    </>
   )
 }

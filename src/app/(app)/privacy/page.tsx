@@ -8,7 +8,7 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { useUserData, useTreasuryProposals } from '@/hooks/useDAO'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function PrivacyPage() {
   const userData = useUserData()
@@ -16,19 +16,17 @@ export default function PrivacyPage() {
 
   if (!userData.isConnected) {
     return (
-      <AppShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="bg-card rounded-lg p-6 text-center">
-            <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-foreground mb-2">
-              Wallet Not Connected
-            </h2>
-            <p className="text-muted-foreground">
-              Please connect your wallet to view privacy features.
-            </p>
-          </div>
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="bg-card rounded-lg p-6 text-center">
+          <ExclamationTriangleIcon className="h-12 w-12 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            Wallet Not Connected
+          </h2>
+          <p className="text-muted-foreground">
+            Please connect your wallet to view privacy features.
+          </p>
         </div>
-      </AppShell>
+      </div>
     )
   }
 
@@ -36,10 +34,11 @@ export default function PrivacyPage() {
   const publicCount = proposals.length - privateCount
 
   return (
-    <AppShell
-      title="Privacy"
-      subtitle="What's actually private on-chain, and how to use it."
-    >
+    <>
+      <PageHeader
+        title="Privacy"
+        subtitle="What's actually private on-chain, and how to use it."
+      />
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="bg-card rounded-lg p-6 border border-border">
           <div className="flex items-start space-x-4">
@@ -115,6 +114,6 @@ export default function PrivacyPage() {
           </p>
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }
