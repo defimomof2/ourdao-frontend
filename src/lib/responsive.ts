@@ -25,38 +25,89 @@ export const breakpoints = {
 
 export type Breakpoint = keyof typeof breakpoints
 
+// --- Shared matchMedia store for useScreenSize ---
+// A single set of matchMedia listeners shared by all consumers, so three
+// components using the hook still only produce one set of browser listeners.
+
+type ScreenState = { breakpoint: Breakpoint; width: number }
+
+const mediaQueries: { bp: Breakpoint; mql: MediaQueryList }[] = []
+let cachedState: ScreenState = { breakpoint: 'lg', width: 1024 }
+let listenerCount = 0
+
+function getInitialBreakpoint(): ScreenState {
+  if (typeof window === 'undefined') return { breakpoint: 'lg', width: 1024 }
+  const w = window.innerWidth
+  return { breakpoint: widthToBreakpoint(w), width: w }
+}
+
+function widthToBreakpoint(w: number): Breakpoint {
+  if (w < breakpoints.sm) return 'sm'
+  if (w < breakpoints.md) return 'md'
+  if (w < breakpoints.lg) return 'lg'
+  if (w < breakpoints.xl) return 'xl'
+  return '2xl'
+}
+
+function recompute() {
+  const w = window.innerWidth
+  const bp = widthToBreakpoint(w)
+  if (bp !== cachedState.breakpoint || w !== cachedState.width) {
+    cachedState = { breakpoint: bp, width: w }
+    notifySubscribers()
+  }
+}
+
+let subscribers: Set<() => void> = new Set()
+
+function notifySubscribers() {
+  for (const cb of subscribers) cb()
+}
+
+function subscribeToScreen(callback: () => void) {
+  if (listenerCount === 0) {
+    // First subscriber — create matchMedia queries and wire them up.
+    for (const bp of Object.keys(breakpoints) as Breakpoint[]) {
+      const mql = window.matchMedia(
+        bp === '2xl'
+          ? `(min-width: ${breakpoints['2xl']}px)`
+          : bp === 'sm'
+          ? `(max-width: ${breakpoints.sm - 1}px)`
+          : `(min-width: ${breakpoints[bp]}px)`
+      )
+      mql.addEventListener('change', recompute)
+      mediaQueries.push({ bp, mql })
+    }
+    cachedState = getInitialBreakpoint()
+  }
+  listenerCount++
+  subscribers.add(callback)
+
+  return () => {
+    subscribers.delete(callback)
+    listenerCount--
+    if (listenerCount === 0) {
+      for (const { mql } of mediaQueries) {
+        mql.removeEventListener('change', recompute)
+      }
+      mediaQueries.length = 0
+      subscribers = new Set()
+    }
+  }
+}
+
+function getScreenSnapshot(): ScreenState {
+  return cachedState
+}
+
+function getScreenServerSnapshot(): ScreenState {
+  return { breakpoint: 'lg', width: 1024 }
+}
+
 // Hook to detect current screen size
 export const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState<Breakpoint | 'xs'>('lg')
-  const [width, setWidth] = useState<number>(1024)
-
-  useEffect(() => {
-    const updateSize = () => {
-      const w = window.innerWidth
-      setWidth(w)
-
-      if (w < breakpoints.sm) {
-        setScreenSize('xs')
-      } else if (w < breakpoints.md) {
-        setScreenSize('sm')
-      } else if (w < breakpoints.lg) {
-        setScreenSize('md')
-      } else if (w < breakpoints.xl) {
-        setScreenSize('lg')
-      } else if (w < breakpoints['2xl']) {
-        setScreenSize('xl')
-      } else {
-        setScreenSize('2xl')
-      }
-    }
-
-    updateSize()
-
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
-
-  return { screenSize, width }
+  const state = useSyncExternalStore(subscribeToScreen, getScreenSnapshot, getScreenServerSnapshot)
+  return { screenSize: state.breakpoint, width: state.width }
 }
 
 // Hook to check if screen is mobile
@@ -167,7 +218,7 @@ export const useResponsiveTable = (columns: string[]) => {
   const { screenSize } = useScreenSize()
   
   // On mobile, show only essential columns
-  const visibleColumns = screenSize === 'xs'
+  const visibleColumns = screenSize === 'sm'
     ? columns.slice(0, 2) 
     : screenSize === 'md'
     ? columns.slice(0, 3)
@@ -177,7 +228,7 @@ export const useResponsiveTable = (columns: string[]) => {
     return columnIndex < visibleColumns.length
   }
 
-  const getMobileCardLayout = () => screenSize === 'xs'
+  const getMobileCardLayout = () => screenSize === 'sm'
 
   return {
     visibleColumns,
@@ -286,9 +337,9 @@ export const useResponsiveCardLayout = () => {
   const { screenSize } = useScreenSize()
 
   const getCardGridClass = (itemCount: number): string => {
-    if (screenSize === 'xs') {
+    if (screenSize === 'sm') {
       return 'grid-cols-1'
-    } else if (screenSize === 'sm') {
+    } else if (screenSize === 'md') {
       return itemCount <= 2 ? 'grid-cols-2' : 'grid-cols-2'
     } else {
       return itemCount <= 2 ? 'grid-cols-2' : itemCount <= 3 ? 'grid-cols-3' : 'grid-cols-4'
@@ -296,8 +347,8 @@ export const useResponsiveCardLayout = () => {
   }
 
   const getCardSize = (): 'compact' | 'normal' | 'large' => {
-    if (screenSize === 'xs') return 'compact'
-    if (screenSize === 'sm') return 'normal'
+    if (screenSize === 'sm') return 'compact'
+    if (screenSize === 'md') return 'normal'
     return 'large'
   }
 
@@ -312,9 +363,9 @@ export const useResponsiveModal = () => {
   const { screenSize } = useScreenSize()
 
   const getModalSize = (): string => {
-    if (screenSize === 'xs') {
+    if (screenSize === 'sm') {
       return 'w-full h-full m-0 rounded-none' // Fullscreen on mobile
-    } else if (screenSize === 'sm') {
+    } else if (screenSize === 'md') {
       return 'w-11/12 max-w-lg rounded-lg'
     } else {
       return 'w-full max-w-2xl rounded-lg'
@@ -322,7 +373,7 @@ export const useResponsiveModal = () => {
   }
 
   const getModalPosition = (): string => {
-    if (screenSize === 'xs') {
+    if (screenSize === 'sm') {
       return 'inset-0' // Fullscreen positioning
     } else {
       return 'inset-4 m-auto'
@@ -330,7 +381,7 @@ export const useResponsiveModal = () => {
   }
 
   const shouldUseDrawer = (): boolean => {
-    return screenSize === 'xs'
+    return screenSize === 'sm'
   }
 
   return {
@@ -345,18 +396,18 @@ export const useResponsiveForm = () => {
   const { screenSize } = useScreenSize()
 
   const getFormLayout = (): 'single-column' | 'two-column' | 'three-column' => {
-    if (screenSize === 'xs') return 'single-column'
-    if (screenSize === 'sm') return 'two-column'
+    if (screenSize === 'sm') return 'single-column'
+    if (screenSize === 'md') return 'two-column'
     return 'three-column'
   }
 
   const getFieldSpacing = (): string => {
-    if (screenSize === 'xs') return 'space-y-4'
+    if (screenSize === 'sm') return 'space-y-4'
     return 'space-y-6'
   }
 
   const getButtonSize = (): 'sm' | 'md' | 'lg' => {
-    if (screenSize === 'xs') return 'md'
+    if (screenSize === 'sm') return 'md'
     return 'lg'
   }
 

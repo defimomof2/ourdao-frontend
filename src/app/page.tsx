@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ConnectButton } from '@/components/ConnectButton'
 import Link from 'next/link'
+import { getContractUrl } from '@/lib/stellar'
 import {
   Shield,
   CreditCard,
@@ -503,8 +504,8 @@ export default function Home() {
                 <h4 className="text-base font-semibold text-white mb-4">Resources</h4>
                 <ul className="space-y-3">
                   <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Documentation</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">GitHub</a></li>
-                  <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Discord</a></li>
+                  <li><a href="https://github.com/ourdao" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors">GitHub</a></li>
+                  <li><a href={getContractUrl()} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white text-sm transition-colors">View Contract</a></li>
                   <li><a href="#" className="text-gray-400 hover:text-white text-sm transition-colors">Support</a></li>
                 </ul>
               </div>

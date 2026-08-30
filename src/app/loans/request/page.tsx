@@ -91,12 +91,6 @@ export default function RequestLoanPage() {
     }
   }, [isSuccess, router])
 
-  useEffect(() => {
-    if (error) {
-      toast.error('Failed to submit loan request. Please try again.')
-    }
-  }, [error])
-
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
@@ -139,8 +133,8 @@ export default function RequestLoanPage() {
         commitmentHex,
         formData.documentHash
       )
-    } catch (err) {
-      console.error('Loan request error:', err)
+    } catch {
+      /* error handled by useWriteAction */
     }
   }
 

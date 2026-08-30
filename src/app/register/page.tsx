@@ -67,8 +67,8 @@ export default function RegisterPage() {
 
     try {
       await registerMember()
-    } catch (err) {
-      console.error('Registration error:', err)
+    } catch {
+      /* error handled by useWriteAction */
     }
   }
 

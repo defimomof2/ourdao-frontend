@@ -44,6 +44,7 @@ export function useAutoNotifications() {
     enabled: !!address,
     queryFn: () => backend.getNotifications(address!),
     refetchInterval: POLL_MS,
+    refetchIntervalInBackground: false,
   })
 
   const notifications = useMemo<NotificationData[]>(() => {
@@ -166,6 +167,7 @@ export function useActivityFeed(limit: number = 50) {
     queryKey: ['activity', limit],
     queryFn: () => backend.getEvents(limit),
     refetchInterval: POLL_MS,
+    refetchIntervalInBackground: false,
   })
 
   const activities = useMemo<ActivityItem[]>(() => (data ?? []).map(toActivity), [data])

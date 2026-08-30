@@ -96,35 +96,17 @@ export default function LoanDetailsPage() {
   }
 
   const handleVote = async (support: boolean) => {
-    try {
-      await voteOnProposal(loanId, support)
-      toast.success(`Vote cast ${support ? 'in favor of' : 'against'} the proposal`)
-    } catch (error) {
-      console.error('Voting failed:', error)
-      toast.error('Failed to cast vote')
-    }
+    await voteOnProposal(loanId, support)
   }
 
   const handleRepayment = async () => {
-    try {
-      await repayLoan(loanId)
-      toast.success('Loan repayment successful')
-    } catch (error) {
-      console.error('Repayment failed:', error)
-      toast.error('Failed to process repayment')
-    }
+    await repayLoan(loanId)
   }
 
   const handleMarkDefaulted = async () => {
     if (!window.confirm('Mark this loan as defaulted? This will slash a share of the borrower\'s treasury claim and cannot be undone.')) return
-    try {
-      await markLoanDefaulted(loanId)
-      toast.success('Loan marked as defaulted')
-      refetchLoan()
-    } catch (error) {
-      console.error('Mark defaulted failed:', error)
-      toast.error('Failed to mark loan as defaulted')
-    }
+    await markLoanDefaulted(loanId)
+    refetchLoan()
   }
 
   const getStatusIcon = (status: number) => {

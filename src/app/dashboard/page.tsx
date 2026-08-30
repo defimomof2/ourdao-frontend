@@ -45,21 +45,11 @@ export default function DashboardPage() {
   }, [isSuccess])
 
   const handleClaimRewards = async () => {
-    try {
-      await claimRewards()
-    } catch (error) {
-      console.error('Failed to claim rewards:', error)
-      toast.error('Failed to claim rewards')
-    }
+    await claimRewards()
   }
 
   const handleClaimYield = async () => {
-    try {
-      await claimYield()
-    } catch (error) {
-      console.error('Failed to claim yield:', error)
-      toast.error('Failed to claim yield')
-    }
+    await claimYield()
   }
 
   if (!userData.isConnected) {
