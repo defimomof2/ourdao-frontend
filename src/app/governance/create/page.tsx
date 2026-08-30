@@ -18,14 +18,8 @@ import {
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline'
 import { useUserData, useProposeTreasury } from '@/hooks/useDAO'
+import { parseToken } from '@/lib/utils'
 import toast from 'react-hot-toast'
-
-// Human amount -> token base units (Stellar assets use 7 decimals).
-function toBaseUnits(input: string): bigint {
-  const n = parseFloat(input)
-  if (!Number.isFinite(n) || n <= 0) return BigInt(0)
-  return BigInt(Math.round(n * 1e7))
-}
 
 const STELLAR_ADDRESS = /^[GC][A-Z2-7]{55}$/
 
@@ -67,7 +61,7 @@ export default function CreateProposalPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const amount = toBaseUnits(form.amount)
+    const amount = parseToken(form.amount)
     if (amount <= BigInt(0)) {
       toast.error('Enter a valid amount greater than zero')
       return
