@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useWallet } from '@/lib/wallet'
 import { CONTRACT_ID, isContractConfigured } from '@/lib/stellar'
-import { daoRead, daoWrite } from '@/lib/dao-client'
+import { daoRead, daoWrite, type InvokeResult } from '@/lib/dao-client'
 import { backend, type BackendEvent, type BackendLoan } from '@/lib/backend'
 import type { UserData, DAOStats, Loan } from '@/types/dao'
 import { MemberStatus } from '@/types/dao'
@@ -183,7 +183,7 @@ function useWriteAction() {
   const run = useCallback(
     async (
       label: string,
-      fn: (w: ReturnType<typeof daoWrite>) => Promise<{ hash: string }>
+      fn: (w: ReturnType<typeof daoWrite>) => Promise<InvokeResult>
     ) => {
       if (!isConnected || !address) {
         toast.error('Connect your wallet first')
@@ -221,12 +221,12 @@ export function useMemberRegistration() {
 
 export function useLoanRequest() {
   const { run, isPending, isSuccess, error } = useWriteAction()
-  const requestLoan = (
-    amount: bigint,
-    _isPrivate = false,
-    _commitment?: string,
-    _documentHash?: string
-  ) => run('Requesting loan', (w) => w.requestLoan(amount))
+  // Returns the new proposal's id (request_loan's on-chain return value) so
+  // callers can immediately attach a supporting document to it.
+  const requestLoan = (amount: bigint) =>
+    run('Requesting loan', (w) => w.requestLoan(amount)).then(
+      (res) => Number(res.returnValue)
+    )
   return { requestLoan, isPending, error, isSuccess }
 }
 
