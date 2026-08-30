@@ -179,3 +179,35 @@
     background-position: -200% 0;
   }
 }
+
+/* Honour the OS-level reduced-motion preference (#73): the skeleton
+ * shimmer, the `animate-spin` / `animate-pulse` Tailwind utilities used
+ * by every spinner and the notification activity indicator, and any
+ * plain CSS transition all route through ordinary `animation` /
+ * `transition` properties, so one block covers all of them.
+ *
+ * Durations are collapsed to near-zero rather than set to `animation:
+ * none`, which is the conventional approach here — it stops the motion
+ * without skipping `animationend`/`transitionend` callbacks some of
+ * these components may rely on. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* The shimmer's near-zero single pass would still leave the gradient
+   * offset mid-sweep; pin it to a flat, static background instead so the
+   * skeleton keeps a distinct, motionless loading appearance. */
+  .skeleton {
+    animation: none;
+    background: var(--color-gray-200);
+  }
+  .dark .skeleton {
+    background: var(--color-gray-700);
+  }
+}
