@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+    # Security-update PRs (one per advisory, opened automatically once
+    # Dependabot security updates are enabled on the repo) are NOT covered by
+    # this group -- they stay separate and ungrouped so a patched advisory is
+    # immediately visible and mergeable on its own, per CONTRIBUTING.md
+    # closing "unrelated dependency bumps bundled into a feature or fix".
+    # This only groups routine, non-security version updates so they don't
+    # flood the PR queue.
+    groups:
+      routine-dependencies:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

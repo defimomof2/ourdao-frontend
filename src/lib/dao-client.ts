@@ -25,6 +25,7 @@ import {
   isContractConfigured,
   server,
 } from './stellar'
+import { formatContractError } from './contract-errors'
 
 // ---------------------------------------------------------------------------
 // ScVal argument builders (JS value -> Soroban value with the right type)
@@ -115,7 +116,7 @@ export async function read<T = unknown>(
 
   const sim = await server.simulateTransaction(tx)
   if (rpc.Api.isSimulationError(sim)) {
-    throw new Error(`simulate ${method} failed: ${sim.error}`)
+    throw new Error(formatContractError(sim.error))
   }
   const retval = sim.result?.retval
   return retval ? (scValToNative(retval) as T) : null
@@ -156,7 +157,7 @@ export async function invoke(
 
   const sent = await server.sendTransaction(signedTx)
   if (sent.status === 'ERROR') {
-    throw new Error(`submit ${method} failed: ${JSON.stringify(sent.errorResult)}`)
+    throw new Error(formatContractError(JSON.stringify(sent.errorResult)))
   }
 
   let result = await server.getTransaction(sent.hash)

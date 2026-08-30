@@ -45,21 +45,11 @@ export default function DashboardPage() {
   }, [isSuccess])
 
   const handleClaimRewards = async () => {
-    try {
-      await claimRewards()
-    } catch (error) {
-      console.error('Failed to claim rewards:', error)
-      toast.error('Failed to claim rewards')
-    }
+    await claimRewards()
   }
 
   const handleClaimYield = async () => {
-    try {
-      await claimYield()
-    } catch (error) {
-      console.error('Failed to claim yield:', error)
-      toast.error('Failed to claim yield')
-    }
+    await claimYield()
   }
 
   if (!userData.isConnected) {
@@ -82,7 +72,7 @@ export default function DashboardPage() {
               )}
             </ConnectButton.Custom>
             <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
                 ← Back to Home
               </Link>
             </div>
@@ -111,7 +101,7 @@ export default function DashboardPage() {
               </Link>
             </Button>
             <div className="text-center">
-              <Link href="/" className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+              <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
                 ← Back to Home
               </Link>
             </div>
@@ -167,8 +157,8 @@ export default function DashboardPage() {
     }] : [])
   ]
 
-  const memberStatusColor = userData.member?.status === 1 ? 'text-green-600' : 'text-gray-600 dark:text-gray-400'
-  const memberStatusBg = userData.member?.status === 1 ? 'bg-green-50' : 'bg-gray-50 dark:bg-gray-800'
+  const memberStatusColor = userData.member?.status === 1 ? 'text-green-600' : 'text-muted-foreground'
+  const memberStatusBg = userData.member?.status === 1 ? 'bg-green-50' : 'bg-muted'
 
   return (
     <AppShell
@@ -185,21 +175,21 @@ export default function DashboardPage() {
                     <CheckCircleIcon className={`h-8 w-8 ${memberStatusColor}`} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 className="text-lg font-semibold text-foreground">
                       {formatAddress(userData.address || '')}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       Status: {MEMBER_STATUS_LABELS[userData.member?.status || 0]}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       Member since: {formatDate(userData.member?.joinDate || 0)}
                     </p>
                   </div>
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Voting Weight</div>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">{userData.votingWeight}</div>
+                  <div className="text-sm text-muted-foreground">Voting Weight</div>
+                  <div className="text-2xl font-bold text-foreground">{userData.votingWeight}</div>
                 </div>
               </div>
             </CardContent>
@@ -218,8 +208,8 @@ export default function DashboardPage() {
                       <CurrencyDollarIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Share Balance</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Share Balance</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {formatToken(userData.member?.shareBalance || BigInt(0))}
                       </p>
                     </div>
@@ -234,8 +224,8 @@ export default function DashboardPage() {
                       <TrophyIcon className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Rewards</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Pending Rewards</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {formatToken(userData.pendingRewards)}
                       </p>
                     </div>
@@ -250,8 +240,8 @@ export default function DashboardPage() {
                       <ChartBarIcon className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Yield Available</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Yield Available</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {formatToken(userData.pendingYield)}
                       </p>
                     </div>
@@ -266,8 +256,8 @@ export default function DashboardPage() {
                       <BanknotesIcon className={`h-8 w-8 ${userData.hasActiveLoan ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Loan</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-medium text-muted-foreground">Active Loan</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {userData.hasActiveLoan ? 'Yes' : 'No'}
                       </p>
                     </div>
@@ -335,14 +325,14 @@ export default function DashboardPage() {
                     const Icon = action.icon
                     return (
                       <Link key={action.title} href={action.href}>
-                        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all cursor-pointer">
+                        <div className="p-4 border border-border rounded-lg hover:border-input hover:shadow-sm transition-all cursor-pointer">
                           <div className="flex items-start space-x-3">
                             <Icon className={`h-6 w-6 ${action.color} mt-1`} />
                             <div>
-                              <h3 className="font-medium text-gray-900 dark:text-white">{action.title}</h3>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{action.description}</p>
+                              <h3 className="font-medium text-foreground">{action.title}</h3>
+                              <p className="text-sm text-muted-foreground">{action.description}</p>
                             </div>
-                            <ArrowUpRightIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 ml-auto" />
+                            <ArrowUpRightIcon className="h-4 w-4 text-muted-foreground ml-auto" />
                           </div>
                         </div>
                       </Link>
@@ -363,19 +353,19 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Members</span>
+                  <span className="text-sm text-muted-foreground">Total Members</span>
                   <span className="font-medium">{stats.totalMembers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Active Members</span>
+                  <span className="text-sm text-muted-foreground">Active Members</span>
                   <span className="font-medium">{stats.activeMembers}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Treasury Balance</span>
+                  <span className="text-sm text-muted-foreground">Treasury Balance</span>
                   <span className="font-medium">{formatToken(stats.treasuryBalance)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Yield</span>
+                  <span className="text-sm text-muted-foreground">Total Yield</span>
                   <span className="font-medium">{formatToken(stats.totalYieldGenerated)}</span>
                 </div>
               </CardContent>
@@ -389,24 +379,24 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">ENS Voting</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.ensVoting ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                  <span className="text-sm text-muted-foreground">ENS Voting</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.ensVoting ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Document Storage</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.documentStorage ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                  <span className="text-sm text-muted-foreground">Document Storage</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.documentStorage ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Private Voting</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.privateVoting ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                  <span className="text-sm text-muted-foreground">Private Voting</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.privateVoting ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Confidential Loans</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.confidentialLoans ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                  <span className="text-sm text-muted-foreground">Confidential Loans</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.confidentialLoans ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600 dark:text-gray-400">Restaking</span>
-                  <div className={`w-2 h-2 rounded-full ${stats.features.restaking ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                  <span className="text-sm text-muted-foreground">Restaking</span>
+                  <div className={`w-2 h-2 rounded-full ${stats.features.restaking ? 'bg-green-500' : 'bg-muted-foreground'}`} />
                 </div>
               </CardContent>
             </Card>
@@ -423,12 +413,12 @@ export default function DashboardPage() {
                     {events.slice(0, 5).map((event, index) => (
                       <div key={index} className="flex items-center space-x-3 text-sm">
                         <div className="w-2 h-2 bg-blue-500 rounded-full" />
-                        <span className="text-gray-600 dark:text-gray-400">{eventLabel(event?.symbol)}</span>
+                        <span className="text-muted-foreground">{eventLabel(event?.symbol)}</span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
+                  <p className="text-sm text-muted-foreground">No recent activity</p>
                 )}
               </CardContent>
             </Card>

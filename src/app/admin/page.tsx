@@ -60,8 +60,8 @@ export default function AdminPage() {
   return (
     <AppShell title="Admin Dashboard" subtitle="Real-time DAO governance and system state.">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-          <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-card rounded-lg shadow border border-border">
+          <div className="border-b border-border">
             <nav className="flex space-x-8 px-6">
               {TABS.map((tab) => (
                 <button
@@ -70,7 +70,7 @@ export default function AdminPage() {
                   className={`flex items-center space-x-2 py-4 text-sm font-medium border-b-2 ${
                     activeTab === tab.id
                       ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {tab.icon}
@@ -93,10 +93,10 @@ export default function AdminPage() {
 function GuardMessage({ icon, title, message }: { icon: ReactNode; title: string; message: string }) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 text-center">
+      <div className="bg-card rounded-lg p-6 text-center">
         {icon}
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{title}</h2>
-        <p className="text-gray-600 dark:text-gray-400">{message}</p>
+        <h2 className="text-xl font-semibold text-foreground mb-2">{title}</h2>
+        <p className="text-muted-foreground">{message}</p>
       </div>
     </div>
   )
@@ -104,10 +104,10 @@ function GuardMessage({ icon, title, message }: { icon: ReactNode; title: string
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</h4>
-      <div className="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{value}</div>
-      {sub && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{sub}</p>}
+    <div className="bg-card rounded-lg p-6 border border-border">
+      <h4 className="text-sm font-medium text-muted-foreground">{label}</h4>
+      <div className="text-2xl font-bold mt-2 text-foreground">{value}</div>
+      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   )
 }
@@ -139,7 +139,15 @@ function OverviewTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
             </div>
           </div>
           <button
-            onClick={() => (stats.isPaused ? unpause() : pause())}
+            onClick={() => {
+              if (stats.isPaused) {
+                if (!window.confirm('Unpause the DAO? This will re-enable all state-changing operations for every member.')) return
+                unpause()
+              } else {
+                if (!window.confirm('Pause the DAO? This will halt new loans, votes, and proposals for every member immediately.')) return
+                pause()
+              }
+            }}
             disabled={isPending}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md text-white disabled:opacity-50 ${
               stats.isPaused ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
@@ -170,6 +178,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
   const submitAddAdmin = async (e: FormEvent) => {
     e.preventDefault()
     if (!newAdmin.trim()) return
+    if (!window.confirm(`Add ${formatAddress(newAdmin.trim())} as an admin? This grants full admin privileges.`)) return
     await addAdmin(newAdmin.trim())
     setNewAdmin('')
     refetch()
@@ -179,23 +188,25 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
     e.preventDefault()
     const bps = Number(threshold)
     if (!Number.isFinite(bps) || bps <= 0 || bps > 10_000) return
+    if (!window.confirm(`Update consensus threshold from ${(stats.consensusThreshold / 100).toFixed(2)}% to ${(bps / 100).toFixed(2)}%? This changes the approval bar for every open proposal.`)) return
     await setThreshold(bps)
     setThresholdInput('')
   }
 
   return (
     <div className="space-y-6">
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Admins ({admins.length})</h3>
+      <div className="bg-card rounded-lg border border-border">
+        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-foreground">Admins ({admins.length})</h3>
         </div>
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {isLoading && <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+        <div className="divide-y divide-border">
+          {isLoading && <div className="px-6 py-4 text-sm text-muted-foreground">Loading…</div>}
           {admins.map((addr) => (
             <div key={addr} className="px-6 py-3 flex items-center justify-between">
-              <span className="font-mono text-sm text-gray-900 dark:text-white">{formatAddress(addr)}</span>
+              <span className="font-mono text-sm text-foreground">{formatAddress(addr)}</span>
               <button
                 onClick={async () => {
+                  if (!window.confirm(`Remove admin ${formatAddress(addr)}? This action requires a remaining admin to re-add them.`)) return
                   await removeAdmin(addr)
                   refetch()
                 }}
@@ -209,13 +220,13 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
             </div>
           ))}
         </div>
-        <form onSubmit={submitAddAdmin} className="p-6 flex space-x-2 border-t border-gray-200 dark:border-gray-700">
+        <form onSubmit={submitAddAdmin} className="p-6 flex space-x-2 border-t border-border">
           <input
             type="text"
             value={newAdmin}
             onChange={(e) => setNewAdmin(e.target.value)}
             placeholder="G… address to add as admin"
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground"
           />
           <button
             type="submit"
@@ -227,10 +238,10 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
         </form>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Consensus Threshold</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+      <div className="bg-card rounded-lg border border-border">
+        <div className="px-6 py-4 border-b border-border">
+          <h3 className="text-lg font-semibold text-foreground">Consensus Threshold</h3>
+          <p className="text-sm text-muted-foreground">
             Currently {(stats.consensusThreshold / 100).toFixed(2)}% of active members, in basis points.
           </p>
         </div>
@@ -242,7 +253,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
             value={threshold}
             onChange={(e) => setThresholdInput(e.target.value)}
             placeholder="e.g. 5100 for 51%"
-            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+            className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground"
           />
           <button
             type="submit"
@@ -262,31 +273,31 @@ function ActivityTab() {
   const { entries, isLoading } = useAdminLog(100)
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <div className="bg-card rounded-lg border border-border">
+      <div className="px-6 py-4 border-b border-border">
+        <h3 className="text-lg font-semibold text-foreground">
           Admin/Governance Event History
         </h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-muted-foreground">
           Indexed on-chain events: admin add/remove, threshold and policy changes, pause/unpause.
         </p>
       </div>
-      <div className="divide-y divide-gray-200 dark:divide-gray-700">
-        {isLoading && <div className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">Loading…</div>}
+      <div className="divide-y divide-border">
+        {isLoading && <div className="px-6 py-4 text-sm text-muted-foreground">Loading…</div>}
         {!isLoading && entries.length === 0 && (
-          <div className="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
+          <div className="px-6 py-8 text-center text-muted-foreground">
             No admin/governance events indexed yet.
           </div>
         )}
         {entries.map((entry) => (
           <div key={entry.id} className="px-6 py-3 flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <span className="px-2 py-1 text-xs font-mono bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded">
+              <span className="px-2 py-1 text-xs font-mono bg-muted text-foreground rounded">
                 {entry.symbol}
               </span>
-              <span className="text-sm text-gray-900 dark:text-white">Ledger {entry.ledger}</span>
+              <span className="text-sm text-foreground">Ledger {entry.ledger}</span>
             </div>
-            <span className="text-xs text-gray-500 dark:text-gray-400">{formatDate(entry.closedAt)}</span>
+            <span className="text-xs text-muted-foreground">{formatDate(entry.closedAt)}</span>
           </div>
         ))}
       </div>

@@ -63,8 +63,8 @@ function VoteButtons({
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="py-12 text-center">
-      <DocumentTextIcon className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-gray-600" />
-      <p className="text-gray-600 dark:text-gray-400">{label}</p>
+      <DocumentTextIcon className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
+      <p className="text-muted-foreground">{label}</p>
     </div>
   )
 }
@@ -97,8 +97,8 @@ function StatCard({
           <Icon className="h-6 w-6" />
         </div>
         <div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white">{value}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          <p className="text-xl font-bold text-foreground">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -108,9 +108,22 @@ function StatCard({
 export default function GovernancePage() {
   const userData = useUserData()
   const stats = useDAOStats()
-  const { proposals: loanProposals, isLoading: loadingLoans } = useLoanProposals()
-  const { proposals: treasuryProposals, isLoading: loadingTreasury } =
-    useTreasuryProposals()
+  const {
+    proposals: loanProposals,
+    isLoading: loadingLoans,
+    hasMore: hasMoreLoans,
+    loadMore: loadMoreLoans,
+    isLoadingMore: loadingMoreLoans,
+    hasErrors: loanErrors,
+  } = useLoanProposals()
+  const {
+    proposals: treasuryProposals,
+    isLoading: loadingTreasury,
+    hasMore: hasMoreTreasury,
+    loadMore: loadMoreTreasury,
+    isLoadingMore: loadingMoreTreasury,
+    hasErrors: treasuryErrors,
+  } = useTreasuryProposals()
   const { voteOnProposal, isPending: votingLoan } = useVoting()
   const { voteOnTreasury, isPending: votingTreasury } = useTreasuryVoting()
 
@@ -120,11 +133,11 @@ export default function GovernancePage() {
         <div className="flex min-h-[60vh] items-center justify-center">
           <Card className="w-full max-w-md">
             <CardContent className="p-6 text-center">
-              <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-500" />
-              <h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
+              <ScaleIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="mb-2 text-lg font-medium text-foreground">
                 Connect Your Wallet
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-muted-foreground">
                 Please connect your wallet to access governance.
               </p>
             </CardContent>
@@ -198,26 +211,31 @@ export default function GovernancePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {loanErrors && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+                  Some loan proposals couldn&apos;t be loaded and are missing from this list. Try again shortly.
+                </div>
+              )}
               {loadingLoans ? (
                 <LoadingRows />
               ) : loanProposals.length === 0 ? (
                 <EmptyState label="No loan proposals yet." />
               ) : (
-                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                <ul className="divide-y divide-border">
                   {loanProposals.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
                       <div className="min-w-0">
                         <Link
                           href={`/loans/${p.id}`}
-                          className="font-medium text-gray-900 dark:text-white hover:text-primary-700 dark:hover:text-primary-400"
+                          className="font-medium text-foreground hover:text-primary-700 dark:hover:text-primary-400"
                         >
                           Loan Proposal #{p.id}
                         </Link>
-                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           {formatToken(p.amount)} · {(p.interestRate / 100).toFixed(1)}% ·{' '}
                           {formatAddress(p.borrower)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
@@ -234,6 +252,13 @@ export default function GovernancePage() {
                   ))}
                 </ul>
               )}
+              {!loadingLoans && hasMoreLoans && (
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" onClick={() => loadMoreLoans()} disabled={loadingMoreLoans}>
+                    {loadingMoreLoans ? 'Loading…' : 'Load more'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -248,27 +273,32 @@ export default function GovernancePage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {treasuryErrors && (
+                <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+                  Some treasury proposals couldn&apos;t be loaded and are missing from this list. Try again shortly.
+                </div>
+              )}
               {loadingTreasury ? (
                 <LoadingRows />
               ) : treasuryProposals.length === 0 ? (
                 <EmptyState label="No treasury withdrawals yet." />
               ) : (
-                <ul className="divide-y divide-gray-100 dark:divide-gray-800">
+                <ul className="divide-y divide-border">
                   {treasuryProposals.map((p) => (
                     <li key={p.id} className="flex flex-wrap items-start justify-between gap-3 py-4">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-gray-900 dark:text-white">{p.title}</p>
+                          <p className="font-medium text-foreground">{p.title}</p>
                           {p.isPrivate && (
                             <Badge variant="secondary" className="text-xs">
                               Private
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                        <p className="mt-0.5 text-sm text-muted-foreground">
                           {formatToken(p.amount)} → {formatAddress(p.recipient)}
                         </p>
-                        <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           For {p.votesFor} · Against {p.votesAgainst}
                         </p>
                       </div>
@@ -284,6 +314,13 @@ export default function GovernancePage() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {!loadingTreasury && hasMoreTreasury && (
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" onClick={() => loadMoreTreasury()} disabled={loadingMoreTreasury}>
+                    {loadingMoreTreasury ? 'Loading…' : 'Load more'}
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>

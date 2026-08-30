@@ -53,7 +53,7 @@ function BrandMark() {
   return (
     <Link href="/" className="flex items-center gap-2">
       <OrbitMark className="h-9 w-9" />
-      <span className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
+      <span className="text-lg font-semibold tracking-tight text-foreground">
         OurDAO
       </span>
     </Link>
@@ -80,7 +80,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
               'group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
               active
                 ? 'bg-primary-50 text-primary-700 dark:bg-primary-950/50 dark:text-primary-300'
-                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             <Icon
@@ -88,7 +88,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                 'h-5 w-5 shrink-0',
                 active
                   ? 'text-primary-600 dark:text-primary-400'
-                  : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-400'
+                  : 'text-muted-foreground group-hover:text-foreground'
               )}
             />
             {item.name}
@@ -110,14 +110,14 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+    <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white/80 backdrop-blur dark:border-gray-800 dark:bg-gray-900/80">
+      <header className="sticky top-0 z-40 border-b border-border bg-card/80 backdrop-blur">
         <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
-            className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent lg:hidden"
             aria-label="Open navigation"
           >
             <Bars3Icon className="h-6 w-6" />
@@ -146,7 +146,7 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
 
       <div className="mx-auto flex w-full max-w-7xl">
         {/* Desktop sidebar */}
-        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 flex-col border-r border-gray-200 bg-white py-4 dark:border-gray-800 dark:bg-gray-900 lg:flex">
+        <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 flex-col border-r border-border bg-card py-4 lg:flex">
           <NavLinks />
         </aside>
 
@@ -154,16 +154,16 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
         {mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <div
-              className="absolute inset-0 bg-gray-900/40"
+              className="absolute inset-0 bg-black/40"
               onClick={() => setMobileOpen(false)}
             />
-            <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-white py-4 shadow-xl dark:bg-gray-900">
+            <div className="absolute left-0 top-0 flex h-full w-64 flex-col bg-card py-4 shadow-xl">
               <div className="mb-2 flex items-center justify-between px-4">
                 <BrandMark />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+                  className="rounded-lg p-2 text-muted-foreground hover:bg-accent"
                   aria-label="Close navigation"
                 >
                   <XMarkIcon className="h-6 w-6" />
@@ -180,11 +180,11 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
             <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
               <div>
                 {title && (
-                  <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
                     {title}
                   </h1>
                 )}
-                {subtitle && <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>}
+                {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
               </div>
               {actions && <div className="flex items-center gap-2">{actions}</div>}
             </div>
