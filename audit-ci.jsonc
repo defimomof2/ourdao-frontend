@@ -1,0 +1,13 @@
+{
+  "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
+  // Fail on moderate or higher so a new advisory anywhere in the tree is caught.
+  // Only "low"/"info" findings (none currently) are allowed to pass silently.
+  "moderate": true,
+  "report-type": "full",
+
+  // Every previous entry here was rooted entirely in ipfs-http-client's
+  // dependency tree, removed when the Infura/IPFS pinning provider was
+  // replaced (see README "Dependency hygiene"). Add an entry back only for a
+  // real, reviewed advisory with an `expiry` date, not as a default.
+  "allowlist": []
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DocumentIcon,
   EyeIcon,
@@ -12,7 +12,8 @@ import {
   XMarkIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import { DocumentMetadata, downloadFromIPFS, getIPFSUrl, canAccessDocument } from '@/lib/ipfs'
+import { DocumentMetadata, getIPFSUrl, canAccessDocument } from '@/lib/ipfs'
+import { useDocumentContent } from '@/hooks/useDocument'
 
 interface DocumentViewerProps {
   doc: DocumentMetadata
@@ -31,66 +32,28 @@ export default function DocumentViewer({
   onError,
   className = ''
 }: DocumentViewerProps) {
-  const [content, setContent] = useState<Uint8Array | null>(null)
-  const [loading, setLoading] = useState(false)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [decrypted, setDecrypted] = useState(false)
-  const [error, setError] = useState('')
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [passwordError, setPasswordError] = useState('')
 
   // Check if user has access
   const hasAccess = canAccessDocument(doc, userAddress, userRoles)
 
-  const loadDocument = async (decryptPassword?: string) => {
-    if (!hasAccess) {
-      setError('You do not have permission to view this doc')
-      return
-    }
-
-    setLoading(true)
-    setError('')
-
-    try {
-      const result = await downloadFromIPFS(
-        doc.hash,
-        doc.encrypted,
-        decryptPassword
-      )
-
-      setContent(result.content)
-      setDecrypted(result.decrypted)
-
-      // Create preview URL for supported file types
-      if (result.content) {
-        // TS's Uint8Array is generic over its buffer type as of TS 5.7+;
-        // BlobPart requires an ArrayBuffer-backed one specifically, so copy
-        // into a fresh Uint8Array to satisfy that (no behavior change).
-        const blob = new Blob([new Uint8Array(result.content)], { type: doc.type })
-        const url = URL.createObjectURL(blob)
-        setPreviewUrl(url)
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to load doc'
-      setError(errorMsg)
-      onError?.(errorMsg)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { content, loading, error: loadError, decrypted, previewUrl, decrypt } =
+    useDocumentContent(doc, userAddress, userRoles)
+  const error = passwordError || loadError
 
   useEffect(() => {
-    if (hasAccess && !doc.encrypted) {
-      loadDocument()
-    }
-  }, [hasAccess, doc.hash])
+    if (loadError) onError?.(loadError)
+  }, [loadError, onError])
 
   const handleDecrypt = () => {
     if (!password.trim()) {
-      setError('Password is required to decrypt this doc')
+      setPasswordError('Password is required to decrypt this doc')
       return
     }
-    loadDocument(password)
+    setPasswordError('')
+    decrypt(password)
   }
 
   const downloadDocument = () => {
@@ -179,8 +142,8 @@ export default function DocumentViewer({
     if (doc.type.startsWith('text/')) {
       const text = new TextDecoder().decode(content)
       return (
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 max-h-96 overflow-auto">
-          <pre className="whitespace-pre-wrap text-sm text-gray-900 dark:text-white">
+        <div className="bg-muted rounded-lg p-4 max-h-96 overflow-auto">
+          <pre className="whitespace-pre-wrap text-sm text-foreground">
             {text.slice(0, 5000)}{text.length > 5000 && '...'}
           </pre>
         </div>
@@ -191,7 +154,7 @@ export default function DocumentViewer({
       return (
         <iframe
           src={previewUrl}
-          className="w-full h-96 rounded-lg border border-gray-300 dark:border-gray-600"
+          className="w-full h-96 rounded-lg border border-input"
           title={doc.name}
         />
       )
@@ -203,7 +166,9 @@ export default function DocumentViewer({
           src={previewUrl}
           controls
           className="max-w-full max-h-96 mx-auto rounded-lg shadow-lg"
+          aria-label={doc.name}
         >
+          <track kind="captions" />
           Your browser does not support the video tag.
         </video>
       )
@@ -215,7 +180,9 @@ export default function DocumentViewer({
           src={previewUrl}
           controls
           className="w-full"
+          aria-label={doc.name}
         >
+          <track kind="captions" />
           Your browser does not support the audio tag.
         </audio>
       )
@@ -226,22 +193,22 @@ export default function DocumentViewer({
 
   if (!hasAccess) {
     return (
-      <div className={`bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 ${className}`}>
+      <div className={`bg-card rounded-lg shadow-lg p-6 ${className}`}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+          <h3 className="text-lg font-semibold text-foreground flex items-center">
             <ExclamationTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
             Access Denied
           </h3>
           {onClose && (
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="text-muted-foreground hover:text-foreground"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
           )}
         </div>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground">
           You don&apos;t have permission to view this document. Contact the document owner for access.
         </p>
       </div>
@@ -249,16 +216,16 @@ export default function DocumentViewer({
   }
 
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-lg shadow-lg ${className}`}>
+    <div className={`bg-card rounded-lg shadow-lg ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between p-6 border-b border-border">
         <div className="flex items-center space-x-3">
           <span className="text-2xl">{getFileIcon(doc.type)}</span>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h3 className="text-lg font-semibold text-foreground">
               {doc.name}
             </h3>
-            <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
               <span>{formatFileSize(doc.size)}</span>
               <span>{doc.uploadedAt.toLocaleDateString()}</span>
               {doc.encrypted && (
@@ -275,7 +242,7 @@ export default function DocumentViewer({
             <>
               <button
                 onClick={downloadDocument}
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="p-2 text-muted-foreground hover:text-foreground"
                 title="Download"
               >
                 <ArrowDownTrayIcon className="h-5 w-5" />
@@ -283,7 +250,7 @@ export default function DocumentViewer({
               <button
                 onClick={shareDocument}
                 data-share-button
-                className="p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                className="p-2 text-muted-foreground hover:text-foreground"
                 title="Share"
               >
                 <ShareIcon className="h-5 w-5" />
@@ -293,7 +260,7 @@ export default function DocumentViewer({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              className="p-2 text-muted-foreground hover:text-foreground"
             >
               <XMarkIcon className="h-5 w-5" />
             </button>
@@ -322,17 +289,19 @@ export default function DocumentViewer({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleDecrypt()}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white pr-10"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-4 w-4 text-gray-400" />
+                    <EyeSlashIcon className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <EyeIcon className="h-4 w-4 text-gray-400" />
+                    <EyeIcon className="h-4 w-4 text-muted-foreground" />
                   )}
                 </button>
               </div>
@@ -378,7 +347,7 @@ export default function DocumentViewer({
         {loading && (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600 dark:text-gray-400">Loading document...</span>
+            <span className="ml-3 text-muted-foreground">Loading document...</span>
           </div>
         )}
 
@@ -387,13 +356,13 @@ export default function DocumentViewer({
           <div className="space-y-4">
             {canPreview(doc.type) ? (
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-900 dark:text-white">Preview</h4>
+                <h4 className="font-medium text-foreground">Preview</h4>
                 {renderPreview()}
               </div>
             ) : (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <DocumentIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-                <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+              <div className="text-center py-12 bg-muted rounded-lg">
+                <DocumentIcon className="mx-auto h-12 w-12 text-muted-foreground" />
+                <p className="mt-4 text-sm text-muted-foreground">
                   Preview not available for this file type
                 </p>
                 <button
@@ -409,38 +378,38 @@ export default function DocumentViewer({
 
         {/* Document metadata */}
         {!loading && (
-          <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <h4 className="font-medium text-gray-900 dark:text-white mb-3">Document Information</h4>
+          <div className="mt-6 pt-4 border-t border-border">
+            <h4 className="font-medium text-foreground mb-3">Document Information</h4>
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="font-medium text-gray-700 dark:text-gray-300">Type</dt>
-                <dd className="text-gray-600 dark:text-gray-400">{doc.type || 'Unknown'}</dd>
+                <dt className="font-medium text-foreground">Type</dt>
+                <dd className="text-muted-foreground">{doc.type || 'Unknown'}</dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-700 dark:text-gray-300">Size</dt>
-                <dd className="text-gray-600 dark:text-gray-400">{formatFileSize(doc.size)}</dd>
+                <dt className="font-medium text-foreground">Size</dt>
+                <dd className="text-muted-foreground">{formatFileSize(doc.size)}</dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-700 dark:text-gray-300">Uploaded</dt>
-                <dd className="text-gray-600 dark:text-gray-400">
+                <dt className="font-medium text-foreground">Uploaded</dt>
+                <dd className="text-muted-foreground">
                   {doc.uploadedAt.toLocaleString()}
                 </dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-700 dark:text-gray-300">IPFS Hash</dt>
-                <dd className="text-gray-600 dark:text-gray-400 font-mono text-xs break-all">
+                <dt className="font-medium text-foreground">IPFS Hash</dt>
+                <dd className="text-muted-foreground font-mono text-xs break-all">
                   {doc.hash}
                 </dd>
               </div>
               {doc.tags && doc.tags.length > 0 && (
                 <div className="col-span-2">
-                  <dt className="font-medium text-gray-700 dark:text-gray-300">Tags</dt>
-                  <dd className="text-gray-600 dark:text-gray-400">
+                  <dt className="font-medium text-foreground">Tags</dt>
+                  <dd className="text-muted-foreground">
                     <div className="flex flex-wrap gap-2 mt-1">
                       {doc.tags.map((tag, index) => (
                         <span
                           key={index}
-                          className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                          className="px-2 py-1 text-xs bg-muted text-foreground rounded"
                         >
                           {tag}
                         </span>

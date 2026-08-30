@@ -188,21 +188,24 @@ export default function DocumentUpload({
     <div className={`space-y-4 ${className}`}>
       {/* Upload Area */}
       <div
+        role="button"
+        tabIndex={0}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
-        className="relative border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click() } }}
+        className="relative border-2 border-dashed border-input rounded-lg p-6 hover:border-blue-500 dark:hover:border-blue-400 transition-colors cursor-pointer"
       >
         <div className="text-center">
-          <CloudArrowUpIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+          <CloudArrowUpIcon className="mx-auto h-12 w-12 text-muted-foreground" />
           <div className="mt-4">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-muted-foreground">
               <span className="font-medium text-blue-600 dark:text-blue-400">
                 Click to upload
               </span>{' '}
               or drag and drop
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {accept ? `Supported: ${accept}` : 'All file types supported'} 
               {' '}• Max {maxSize}MB {multiple ? 'per file' : ''}
             </p>
@@ -221,29 +224,29 @@ export default function DocumentUpload({
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-2">
-          <h4 className="font-medium text-gray-900 dark:text-white">
+          <h4 className="font-medium text-foreground">
             Selected Files ({files.length})
           </h4>
           <div className="space-y-2">
             {files.map((file, index) => (
               <div
                 key={`${file.name}-${index}`}
-                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
+                className="flex items-center justify-between p-3 bg-muted rounded-lg"
               >
                 <div className="flex items-center space-x-3">
                   <span className="text-xl">{getFileIcon(file.type)}</span>
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-medium text-foreground">
                       {file.name}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                    <p className="text-xs text-muted-foreground">
                       {formatFileSize(file.size)} • {file.type || 'Unknown'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => removeFile(index)}
-                  className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="p-1 text-muted-foreground hover:text-foreground"
                 >
                   <XMarkIcon className="h-4 w-4" />
                 </button>
@@ -263,9 +266,9 @@ export default function DocumentUpload({
               checked={encrypt}
               onChange={(e) => setEncrypt(e.target.checked)}
               disabled={requireEncryption}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-input rounded disabled:opacity-50"
             />
-            <label htmlFor="encrypt" className="flex items-center space-x-2 text-sm font-medium text-gray-900 dark:text-white">
+            <label htmlFor="encrypt" className="flex items-center space-x-2 text-sm font-medium text-foreground">
               <LockClosedIcon className="h-4 w-4" />
               <span>Encrypt files</span>
               {requireEncryption && <span className="text-xs text-blue-600 dark:text-blue-400">(Required)</span>}
@@ -280,21 +283,23 @@ export default function DocumentUpload({
                   placeholder="Enter encryption password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white pr-10"
+                  className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground pr-10"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <EyeSlashIcon className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <EyeIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />
+                    <EyeIcon className="h-4 w-4 text-muted-foreground" />
                   )}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
+              <p className="text-xs text-muted-foreground">
                 Choose a strong password. This will be required to decrypt and view the files.
               </p>
             </div>
@@ -304,8 +309,8 @@ export default function DocumentUpload({
 
       {/* Permissions */}
       {showPermissions && encrypt && (
-        <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <h4 className="font-medium text-gray-900 dark:text-white">Access Permissions</h4>
+        <div className="space-y-4 p-4 bg-muted rounded-lg">
+          <h4 className="font-medium text-foreground">Access Permissions</h4>
           
           <div className="flex items-center space-x-3">
             <input
@@ -313,24 +318,25 @@ export default function DocumentUpload({
               id="public"
               checked={permissions.public}
               onChange={(e) => setPermissions(prev => ({ ...prev, public: e.target.checked }))}
-              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded"
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-input rounded"
             />
-            <label htmlFor="public" className="text-sm text-gray-900 dark:text-white">
+            <label htmlFor="public" className="text-sm text-foreground">
               Allow public access (with password)
             </label>
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-white">
+            <label htmlFor="allowed-user" className="block text-sm font-medium text-foreground">
               Allowed Users (Addresses)
             </label>
             <div className="flex space-x-2">
               <input
+                id="allowed-user"
                 type="text"
                 placeholder="0x..."
                 value={newUser}
                 onChange={(e) => setNewUser(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground"
               />
               <button
                 type="button"
@@ -351,6 +357,7 @@ export default function DocumentUpload({
                     <button
                       onClick={() => removeAllowedUser(user)}
                       className="ml-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                      aria-label={`Remove user ${user.slice(0, 8)}...`}
                     >
                       <XMarkIcon className="h-3 w-3" />
                     </button>
@@ -361,14 +368,15 @@ export default function DocumentUpload({
           </div>
 
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-gray-900 dark:text-white">
+            <label htmlFor="allowed-role" className="block text-sm font-medium text-foreground">
               Allowed Roles
             </label>
             <div className="flex space-x-2">
               <select
+                id="allowed-role"
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
-                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                className="flex-1 px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-muted dark:text-foreground"
               >
                 <option value="">Select role...</option>
                 <option value="admin">Admin</option>
@@ -396,6 +404,7 @@ export default function DocumentUpload({
                     <button
                       onClick={() => removeAllowedRole(role)}
                       className="ml-1 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                      aria-label={`Remove role ${role}`}
                     >
                       <XMarkIcon className="h-3 w-3" />
                     </button>
@@ -410,11 +419,11 @@ export default function DocumentUpload({
       {/* Upload Progress */}
       {uploading && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>Uploading...</span>
             <span>{Math.round(uploadProgress)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-muted rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}

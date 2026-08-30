@@ -57,10 +57,12 @@ All config is env-driven with public-testnet defaults (see `.env.example`):
 | `NEXT_PUBLIC_CONTRACT_ID` | Deployed OurDAO contract id (`C…`) | _(empty → read-only "not configured")_ |
 | `NEXT_PUBLIC_SOROBAN_RPC_URL` | Soroban RPC endpoint | `https://soroban-testnet.stellar.org` |
 | `NEXT_PUBLIC_NETWORK_PASSPHRASE` | Network passphrase | testnet |
-| `NEXT_PUBLIC_IPFS_GATEWAY` | Gateway for document content hashes | Pinata |
+| `NEXT_PUBLIC_IPFS_GATEWAY` | Gateway for reading document content hashes (no credential needed) | Pinata |
+| `PINATA_JWT` | **Server-only** Pinata credential for pinning uploaded documents — read by `src/app/api/documents/route.ts`, never exposed to the client | _(empty → uploads fail with a visible error)_ |
 | `NEXT_PUBLIC_BACKEND_URL` | [`ourdao-backend`](https://github.com/ourdao/ourdao-backend) indexer/API (loan history, notifications, admin log, events) | `http://localhost:4000` |
+| `NEXT_PUBLIC_SITE_URL` | Public site origin, no trailing slash — used as `metadataBase` so Open Graph/Twitter image URLs resolve to an absolute address | `http://localhost:3000` |
 
-Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/writes are disabled until you point it at a deployed contract. Without a reachable backend, everything backend-derived (loan history, notifications, activity/admin logs) degrades to empty rather than erroring — see `src/lib/backend.ts`.
+Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/writes are disabled until you point it at a deployed contract. Without a reachable backend, everything backend-derived (loan history, notifications, activity/admin logs) degrades to empty rather than erroring — see `src/lib/backend.ts`. Without `PINATA_JWT`, document uploads fail with a clear error rather than uploading nowhere silently.
 
 ## Routes
 
@@ -82,8 +84,14 @@ Without a `NEXT_PUBLIC_CONTRACT_ID` the UI runs and renders, but on-chain reads/
 
 ```
 src/
-  app/            # Next.js App Router pages (one folder per route above)
-  components/     # Shared UI: AppShell (header/sidebar), ConnectButton, NotificationCenter,
+  app/
+    (app)/        # Shell-wrapped routes (dashboard, loans, governance, treasury,
+                  # admin, privacy) sharing (app)/layout.tsx. Route groups are
+                  # parenthesised and don't affect the URL.
+    register/     # Standalone route, own header (see below)
+    page.tsx      # Landing page, at the root, own header (see below)
+  components/     # Shared UI: AppShell (header/sidebar), PageHeader (per-page
+                  # title/subtitle/actions), ConnectButton, NotificationCenter,
                   # ThemeToggle, DocumentUpload, and the shadcn/ui-derived primitives in ui/
   hooks/          # useDAO.ts (contract reads/writes as React Query hooks),
                   # useNotifications.ts (backend-polled notifications + activity feed),
@@ -92,7 +100,7 @@ src/
   types/          # Shared TypeScript types
 ```
 
-`AppShell` (header + sidebar navigation) is rendered by each page individually rather than being a Next.js `layout.tsx` — every page wraps its content in `<AppShell>` instead of hand-rolling its own chrome. The landing page and `/register` are the exceptions, with their own standalone headers since they're meant to work before a user has any DAO context.
+`AppShell` (header + sidebar navigation) is rendered once by `(app)/layout.tsx`, so it persists across navigation within that group instead of remounting per page. Pages under `(app)/` render `<PageHeader title=... subtitle=... actions={...} />` for their own title block — a layout only renders `{children}`, so it can't take page-specific props the way the old per-page `<AppShell>` wrapper did. The landing page and `/register` stay outside the group, with their own standalone headers, since they're meant to work before a user has any DAO context.
 
 Data flows through [TanStack Query](https://tanstack.com/query) throughout: `useDAO.ts`'s hooks wrap live Soroban contract reads (the contract itself has no queryable lists, so proposal/loan enumeration counts come from the indexer, then each item is fetched live by id straight from the contract — the count is an off-chain hint, the data is always on-chain-sourced) and Freighter-signed writes; `useNotifications.ts` wraps the backend's polled REST endpoints.
 
@@ -127,17 +135,15 @@ npm test          # vitest
 
 ## Testing
 
-Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage: `dao-client.ts`'s ScVal builders and `policyToScVal`, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers (including `mapLoan`, the real disbursed-loan mapper), `useNotifications.ts`'s hooks, and `useNow.ts`'s `useSyncExternalStore` contract (using fake timers, since the underlying bug it guards against — an infinite render loop — doesn't reproduce reliably just by rendering in jsdom). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`.
+Vitest + Testing Library, jsdom by default (pure-logic suites that don't need the DOM, like the Soroban ScVal builders, opt into the Node environment per-file via `// @vitest-environment node`). Coverage: `dao-client.ts`'s ScVal builders and `policyToScVal`, `backend.ts`'s fetch wrappers (including its fail-soft-on-error behavior), `useDAO.ts`'s pure mapping helpers (including `mapLoan`, the real disbursed-loan mapper), `useNotifications.ts`'s hooks, and `useNow.ts`'s `useSyncExternalStore` contract (using fake timers, since the underlying bug it guards against — an infinite render loop — doesn't reproduce reliably just by rendering in jsdom). CI runs lint, typecheck, test, and build on every push/PR — see `.github/workflows/ci.yml`. Two more jobs run alongside, kept separate from those four so an unrelated advisory or a generous, PR-controllable size budget never blocks a PR that has nothing to do with either: a dependency `audit` (see [Dependency hygiene](#security-notes)) that never fails the run (warns instead), and a `bundle-size` check that compares the client JS/CSS shipped from `.next/static` against the latest `main` baseline, only failing on a >5%-and->10 KB gzip regression.
 
 ## What's real vs. not
 
 Most of the app is wired to the live contract + backend: registration, loan request/vote/repay, treasury propose/vote, staking, name registry, commit-reveal private voting, document content-hash attachment, notifications, admin actions (pause/unpause, add/remove admin, set consensus threshold), an admin/governance audit log, and loan defaults — `markLoanDefaulted` is exposed in `dao-client.ts`, and the dashboard's Recent Activity feed labels every real event (including `loan_dflt`) instead of a generic placeholder. The loan detail page (`/loans/[id]`) reads the contract's real disbursed `Loan` (via `useLoan`) once a proposal is approved — actual status, due date, and outstanding balance, not proposal-status guesswork that never reflected repayment or default.
 
-One known gap remains:
+**IPFS document storage** (`src/lib/ipfs.ts`) is also real now: AES-GCM encryption happens client-side exactly as before, then the ciphertext is posted to a Next.js route handler (`src/app/api/documents/route.ts`) that pins it to Pinata using a server-only credential (`PINATA_JWT`) — the plaintext and the credential both stay off the client bundle. Downloads read straight from the public gateway (`NEXT_PUBLIC_IPFS_GATEWAY`), no credential needed.
 
-- **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
-
-`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` still sets `typescript.ignoreBuildErrors` — safe to remove now, kept since the CI gate already covers it (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
+`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` no longer sets `typescript.ignoreBuildErrors` — `next build` now fails on type errors just like the CI `typecheck` gate (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
 
 Running on Next.js 16 (Turbopack by default) + React 19.2.
 
@@ -146,11 +152,11 @@ Running on Next.js 16 (Turbopack by default) + React 19.2.
 - **No custody.** The frontend never holds a private key — every signature happens inside the Freighter extension, in the user's own browser context. `src/lib/wallet.tsx` only ever receives a signed transaction XDR back, never a key.
 - **Read-only degradation, not silent failure.** Without a configured contract id or a reachable backend, the UI runs in an explicit "not configured" / empty state rather than throwing — see [Configuration](#configuration).
 - **Error boundaries.** `error.tsx` (route-segment) and `global-error.tsx` (root-layout-level) catch uncaught render errors and offer a retry instead of the previous behavior, where any single uncaught error anywhere in the tree would take down the entire client-side app with no recovery short of a hard reload.
-- **Dependency hygiene.** A critical Next.js RCE and several other npm audit findings were patched; remaining findings are rooted entirely in `ipfs-http-client`'s dependency tree, tracked against the IPFS gap above rather than silently ignored.
+- **Dependency hygiene.** A critical Next.js RCE and several other npm audit findings were patched. `ipfs-http-client` — previously the only dependency with an allowlisted finding — has been removed entirely along with its tree, so its `audit-ci.jsonc` entries are gone too. The rest is enforced automatically rather than tracked by hand: a separate `audit` job in CI (`.github/workflows/ci.yml`) runs `audit-ci` (config: `audit-ci.jsonc`) on every PR at the moderate-and-above threshold, so a new advisory is caught the day it lands instead of at the next manual review. It's a non-blocking job (visible as a warning, doesn't fail the run) since a fresh advisory affects every open PR at once, not just the one that happens to trigger it. Any future allowlist entry is scoped by exact GHSA id with an expiry date, after which it starts failing again until someone deliberately re-reviews and extends it or the dependency is fixed/replaced — see the comments in `audit-ci.jsonc`. One unrelated, unallowlisted finding remains in `nanoid` via `postcss` (pulled in by `next`/`@tailwindcss/postcss`). [Dependabot](.github/dependabot.yml) opens security-update PRs automatically as advisories get patched upstream, and batches routine (non-security) version bumps into a weekly grouped PR so they don't flood the queue — see [CONTRIBUTING.md](./CONTRIBUTING.md)'s note on unrelated dependency bumps.
+- **Server-only credentials.** `PINATA_JWT` (document pinning) is read only in `src/app/api/documents/route.ts`, a server-side route handler — never in a `NEXT_PUBLIC_`-prefixed variable, which Next.js would otherwise inline into the client bundle.
 
 ## Roadmap
 
-- Replace the dead IPFS/Infura endpoint with a real pinning provider.
 - Rework the loan detail page's data model so it derives loan/proposal state more directly (some legacy fields still shadow real on-chain data in places not yet fully migrated).
 - Convert `DocumentViewer.tsx`'s manual fetch-in-effect to React Query, matching the rest of the app's data-fetching convention (currently unused in the app, flagged rather than silently left as-is).
 
