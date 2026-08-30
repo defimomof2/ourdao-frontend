@@ -137,7 +137,7 @@ One known gap remains:
 
 - **IPFS document storage** (`src/lib/ipfs.ts`) — the encryption (AES-GCM) is real, but the upload/download target (Infura's IPFS gateway) has been shut down. Needs a real pinning provider (Pinata/web3.storage) + API key before it actually stores anything.
 
-`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` still sets `typescript.ignoreBuildErrors` — safe to remove now, kept since the CI gate already covers it (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
+`tsc --noEmit` is fully clean and enforced in CI. `next.config.ts` no longer sets `typescript.ignoreBuildErrors` — `next build` now fails on type errors just like the CI `typecheck` gate (the `eslint.ignoreDuringBuilds` counterpart was removed outright in the Next 16 upgrade — that config key no longer exists).
 
 Running on Next.js 16 (Turbopack by default) + React 19.2.
 
