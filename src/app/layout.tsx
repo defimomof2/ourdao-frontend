@@ -61,8 +61,10 @@ export const metadata: Metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // WCAG 1.4.4 (Resize Text) requires users be able to pinch-zoom to at
+  // least 200%. maximumScale: 1 + userScalable: false previously blocked
+  // that entirely (issue #65) — removed so the browser's default zoom
+  // range applies.
   viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
