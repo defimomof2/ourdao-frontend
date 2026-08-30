@@ -9,7 +9,7 @@ import {
   mapTreasuryProposal,
   mapLoan,
   eventLabel,
-} from '@/hooks/useDAO'
+} from '@/lib/dao-mappers'
 import { MemberStatus } from '@/types/dao'
 import type { BackendLoan } from '@/lib/backend'
 
