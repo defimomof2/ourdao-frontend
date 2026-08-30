@@ -65,7 +65,7 @@ export default function TreasuryPage() {
   const stats = useDAOStats()
   const myStake = useStake()
   const { stake, unstake, isPending: staking } = useStaking()
-  const { proposals, isLoading } = useTreasuryProposals()
+  const { proposals, isLoading, hasMore, loadMore, isLoadingMore, hasErrors } = useTreasuryProposals()
   const { voteOnTreasury, isPending: voting } = useTreasuryVoting()
 
   const [amount, setAmount] = useState('')
@@ -213,6 +213,11 @@ export default function TreasuryPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {hasErrors && (
+              <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950/30 dark:text-yellow-300">
+                Some treasury proposals couldn&apos;t be loaded and are missing from this list. Try again shortly.
+              </div>
+            )}
             {isLoading ? (
               <div className="space-y-3">
                 {[0, 1].map((i) => (
@@ -282,6 +287,13 @@ export default function TreasuryPage() {
                   </li>
                 ))}
               </ul>
+            )}
+            {!isLoading && hasMore && (
+              <div className="mt-4 flex justify-center">
+                <Button variant="outline" onClick={() => loadMore()} disabled={isLoadingMore}>
+                  {isLoadingMore ? 'Loading…' : 'Load more'}
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
