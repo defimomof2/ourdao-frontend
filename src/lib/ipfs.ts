@@ -1,27 +1,4 @@
-import { create } from 'ipfs-http-client'
-
-// IPFS client configuration
-const IPFS_GATEWAYS = [
-  'https://ipfs.io/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/'
-]
-
-// Initialize IPFS client
-let ipfsClient: ReturnType<typeof create> | null = null
-
-try {
-  ipfsClient = create({
-    host: 'ipfs.infura.io',
-    port: 5001,
-    protocol: 'https',
-    headers: {
-      authorization: process.env.NEXT_PUBLIC_IPFS_AUTH || ''
-    }
-  })
-} catch {
-  console.warn('IPFS client initialization failed, using mock mode')
-}
+import { IPFS_GATEWAY } from '@/constants'
 
 // Encryption utilities
 export async function encryptData(data: string, password: string): Promise<string> {
@@ -116,100 +93,79 @@ export async function decryptData(encryptedData: string, password: string): Prom
   return decoder.decode(decrypted)
 }
 
-// IPFS upload with encryption
+// IPFS upload with encryption. Encryption happens here, client-side, before
+// anything leaves the browser — the server route this posts to only ever
+// sees the resulting ciphertext, never the plaintext file.
 export async function uploadToIPFS(
-  file: File, 
-  encrypt: boolean = false, 
+  file: File,
+  encrypt: boolean = false,
   password?: string
 ): Promise<{ hash: string; size: number; encrypted: boolean }> {
-  try {
-    if (!ipfsClient) {
-      // Mock implementation for development
-      const mockHash = `Qm${Math.random().toString(36).substring(2).padEnd(44, 'a')}`
-      return {
-        hash: mockHash,
-        size: file.size,
-        encrypted: encrypt
-      }
-    }
-    
-    const fileContent = await file.arrayBuffer()
-    let processedData: Uint8Array
-    
-    if (encrypt && password) {
-      const fileText = new TextDecoder().decode(fileContent)
-      const encryptedText = await encryptData(fileText, password)
-      processedData = new TextEncoder().encode(encryptedText)
-    } else {
-      processedData = new Uint8Array(fileContent)
-    }
-    
-    const result = await ipfsClient.add(processedData, {
-      pin: true,
-      wrapWithDirectory: false
-    })
-    
-    return {
-      hash: result.cid.toString(),
-      size: processedData.length,
-      encrypted: encrypt
-    }
-  } catch (error) {
-    console.error('IPFS upload failed:', error)
-    throw new Error('Failed to upload document to IPFS')
+  const fileContent = await file.arrayBuffer()
+  let processedData: Uint8Array
+
+  if (encrypt && password) {
+    const fileText = new TextDecoder().decode(fileContent)
+    const encryptedText = await encryptData(fileText, password)
+    processedData = new TextEncoder().encode(encryptedText)
+  } else {
+    processedData = new Uint8Array(fileContent)
+  }
+
+  // TS's Uint8Array is generic over its buffer type as of TS 5.7+; BlobPart
+  // requires an ArrayBuffer-backed one specifically, so copy into a fresh
+  // Uint8Array to satisfy that (no behavior change) — same fix as
+  // DocumentViewer.tsx's preview blob.
+  const res = await fetch('/api/documents', {
+    method: 'POST',
+    body: new Blob([new Uint8Array(processedData)]),
+  })
+
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null
+    throw new Error(body?.error || `Document upload failed (${res.status})`)
+  }
+
+  const { hash } = (await res.json()) as { hash: string }
+
+  return {
+    hash,
+    size: processedData.length,
+    encrypted: encrypt,
   }
 }
 
-// IPFS download with decryption
+// IPFS download with decryption, read straight from the public gateway — no
+// credential needed for reads.
 export async function downloadFromIPFS(
-  hash: string, 
-  encrypted: boolean = false, 
+  hash: string,
+  encrypted: boolean = false,
   password?: string
 ): Promise<{ content: Uint8Array; decrypted: boolean }> {
-  try {
-    if (!ipfsClient) {
-      // Mock implementation for development
-      const mockContent = new TextEncoder().encode(`Mock document content for ${hash}`)
-      return {
-        content: mockContent,
-        decrypted: false
-      }
-    }
-    
-    const chunks: Uint8Array[] = []
-    for await (const chunk of ipfsClient.cat(hash)) {
-      chunks.push(chunk)
-    }
-    
-    const fileData = new Uint8Array(chunks.reduce((acc, chunk) => acc + chunk.length, 0))
-    let offset = 0
-    for (const chunk of chunks) {
-      fileData.set(chunk, offset)
-      offset += chunk.length
-    }
-    
-    if (encrypted && password) {
-      const encryptedText = new TextDecoder().decode(fileData)
-      const decryptedText = await decryptData(encryptedText, password)
-      return {
-        content: new TextEncoder().encode(decryptedText),
-        decrypted: true
-      }
-    }
-    
+  const res = await fetch(`${IPFS_GATEWAY}${hash}`)
+  if (!res.ok) {
+    throw new Error(`Failed to fetch document from IPFS gateway (${res.status})`)
+  }
+  const fileData = new Uint8Array(await res.arrayBuffer())
+
+  if (encrypted && password) {
+    const encryptedText = new TextDecoder().decode(fileData)
+    const decryptedText = await decryptData(encryptedText, password)
     return {
-      content: fileData,
-      decrypted: false
+      content: new TextEncoder().encode(decryptedText),
+      decrypted: true,
     }
-  } catch (error) {
-    console.error('IPFS download failed:', error)
-    throw new Error('Failed to download document from IPFS')
+  }
+
+  return {
+    content: fileData,
+    decrypted: false,
   }
 }
 
 // Get IPFS URL for direct access
-export function getIPFSUrl(hash: string, gatewayIndex: number = 0): string {
-  return `${IPFS_GATEWAYS[gatewayIndex]}${hash}`
+export function getIPFSUrl(hash: string): string {
+  return `${IPFS_GATEWAY}${hash}`
 }
 
 // Validate IPFS hash
