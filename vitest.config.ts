@@ -10,5 +10,8 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
     globals: false,
+    // Multi-step component tests (AppShell + several re-renders per step)
+    // routinely exceed the 5s default under jsdom.
+    testTimeout: 15000,
   },
 })

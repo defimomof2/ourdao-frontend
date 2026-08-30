@@ -13,9 +13,19 @@ const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
 })
 
+const SITE_NAME = "OurDAO"
+const SITE_TITLE = "OurDAO - Member-Owned Lending on Stellar"
+const SITE_DESCRIPTION =
+  "A member-owned lending DAO on Stellar Soroban with a name registry, content-hash document metadata, commit-reveal private voting, and staking."
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+
 export const metadata: Metadata = {
-  title: "OurDAO - Member-Owned Lending on Stellar",
-  description: "A member-owned lending DAO on Stellar Soroban with a name registry, content-hash document metadata, commit-reveal private voting, and staking.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: SITE_TITLE,
+    template: "%s · OurDAO",
+  },
+  description: SITE_DESCRIPTION,
   keywords: "DeFi, DAO, lending, Stellar, Soroban, peer-to-peer",
   authors: [{ name: "OurDAO" }],
   manifest: "/manifest.json",
@@ -26,6 +36,18 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false
+  },
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: "/",
+    siteName: SITE_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
   },
   other: {
     "mobile-web-app-capable": "yes",
