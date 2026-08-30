@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # The merge queue builds each entry on a gh-readonly-queue/* branch and fires
+  # merge_group, not pull_request. Without this trigger the four required checks
+  # never report there, so every queued PR stalls in AWAITING_CHECKS until the
+  # ruleset's 30-minute timeout evicts it and nothing can ever merge.
+  merge_group:
 
 permissions:
   contents: read
