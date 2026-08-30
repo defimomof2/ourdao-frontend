@@ -77,6 +77,19 @@ describe('RequestLoanPage', () => {
     expect(screen.queryByLabelText(/Enable Privacy Mode/)).not.toBeInTheDocument()
   })
 
+  it('validation: a zero amount is rejected client-side and never reaches requestLoan', async () => {
+    render(<RequestLoanPage />)
+    // '0' is a non-empty string, so the Next button's `!formData.amount`
+    // guard doesn't catch it — the numeric check in handleSubmit must.
+    await fillAmountAndAdvance('0')
+    await advanceToReview()
+
+    fireEvent.click(screen.getByRole('button', { name: /Submit Request/ }))
+
+    await waitFor(() => expect(mockToastError).toHaveBeenCalledWith('Please enter a valid loan amount'))
+    expect(mockRequestLoan).not.toHaveBeenCalled()
+  })
+
   it('requests the loan with only the parsed amount', async () => {
     render(<RequestLoanPage />)
     await fillAmountAndAdvance('10')

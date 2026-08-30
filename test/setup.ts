@@ -9,3 +9,20 @@ import { cleanup } from '@testing-library/react'
 afterEach(() => {
   cleanup()
 })
+
+// jsdom doesn't implement matchMedia. src/lib/responsive.ts's useScreenSize
+// (used by several pages via useIsMobile/useResponsiveCardLayout) calls it
+// unconditionally, so any component test that renders one of those pages
+// throws without this.
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = ((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  })) as typeof window.matchMedia
+}
