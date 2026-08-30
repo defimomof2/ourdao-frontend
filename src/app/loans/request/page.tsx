@@ -126,16 +126,17 @@ export default function RequestLoanPage() {
 
     try {
       const amount = parseToken(formData.amount)
-      let commitment = ''
+      let commitmentHex = ''
       
-      if (formData.isPrivate && formData.privacySecret) {
-        commitment = generateCommitment(formData.privacySecret, formData.purpose)
+      if (formData.isPrivate) {
+        const { commitment } = await generateCommitment(true)
+        commitmentHex = Array.from(commitment).map(b => b.toString(16).padStart(2, '0')).join('')
       }
 
       await requestLoan(
         amount,
         formData.isPrivate,
-        commitment,
+        commitmentHex,
         formData.documentHash
       )
     } catch (err) {

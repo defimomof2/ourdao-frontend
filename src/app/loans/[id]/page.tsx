@@ -116,6 +116,7 @@ export default function LoanDetailsPage() {
   }
 
   const handleMarkDefaulted = async () => {
+    if (!window.confirm('Mark this loan as defaulted? This will slash a share of the borrower\'s treasury claim and cannot be undone.')) return
     try {
       await markLoanDefaulted(loanId)
       toast.success('Loan marked as defaulted')

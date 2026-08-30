@@ -27,34 +27,32 @@ export type Breakpoint = keyof typeof breakpoints
 
 // Hook to detect current screen size
 export const useScreenSize = () => {
-  const [screenSize, setScreenSize] = useState<Breakpoint>('lg')
+  const [screenSize, setScreenSize] = useState<Breakpoint | 'xs'>('lg')
   const [width, setWidth] = useState<number>(1024)
 
   useEffect(() => {
     const updateSize = () => {
-      const width = window.innerWidth
-      setWidth(width)
-      
-      if (width < breakpoints.sm) {
+      const w = window.innerWidth
+      setWidth(w)
+
+      if (w < breakpoints.sm) {
+        setScreenSize('xs')
+      } else if (w < breakpoints.md) {
         setScreenSize('sm')
-      } else if (width < breakpoints.md) {
+      } else if (w < breakpoints.lg) {
         setScreenSize('md')
-      } else if (width < breakpoints.lg) {
+      } else if (w < breakpoints.xl) {
         setScreenSize('lg')
-      } else if (width < breakpoints.xl) {
+      } else if (w < breakpoints['2xl']) {
         setScreenSize('xl')
       } else {
         setScreenSize('2xl')
       }
     }
 
-    // Set initial size
     updateSize()
 
-    // Add event listener
     window.addEventListener('resize', updateSize)
-    
-    // Cleanup
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
@@ -63,20 +61,20 @@ export const useScreenSize = () => {
 
 // Hook to check if screen is mobile
 export const useIsMobile = () => {
-  const { screenSize } = useScreenSize()
-  return screenSize === 'sm'
+  const { width } = useScreenSize()
+  return width < breakpoints.sm
 }
 
 // Hook to check if screen is tablet
 export const useIsTablet = () => {
-  const { screenSize } = useScreenSize()
-  return screenSize === 'md'
+  const { width } = useScreenSize()
+  return width >= breakpoints.sm && width < breakpoints.lg
 }
 
 // Hook to check if screen is desktop
 export const useIsDesktop = () => {
-  const { screenSize } = useScreenSize()
-  return ['lg', 'xl', '2xl'].includes(screenSize)
+  const { width } = useScreenSize()
+  return width >= breakpoints.lg
 }
 
 // Responsive grid utilities
@@ -169,7 +167,7 @@ export const useResponsiveTable = (columns: string[]) => {
   const { screenSize } = useScreenSize()
   
   // On mobile, show only essential columns
-  const visibleColumns = screenSize === 'sm' 
+  const visibleColumns = screenSize === 'xs'
     ? columns.slice(0, 2) 
     : screenSize === 'md'
     ? columns.slice(0, 3)
@@ -179,7 +177,7 @@ export const useResponsiveTable = (columns: string[]) => {
     return columnIndex < visibleColumns.length
   }
 
-  const getMobileCardLayout = () => screenSize === 'sm'
+  const getMobileCardLayout = () => screenSize === 'xs'
 
   return {
     visibleColumns,
@@ -288,9 +286,9 @@ export const useResponsiveCardLayout = () => {
   const { screenSize } = useScreenSize()
 
   const getCardGridClass = (itemCount: number): string => {
-    if (screenSize === 'sm') {
+    if (screenSize === 'xs') {
       return 'grid-cols-1'
-    } else if (screenSize === 'md') {
+    } else if (screenSize === 'sm') {
       return itemCount <= 2 ? 'grid-cols-2' : 'grid-cols-2'
     } else {
       return itemCount <= 2 ? 'grid-cols-2' : itemCount <= 3 ? 'grid-cols-3' : 'grid-cols-4'
@@ -298,8 +296,8 @@ export const useResponsiveCardLayout = () => {
   }
 
   const getCardSize = (): 'compact' | 'normal' | 'large' => {
-    if (screenSize === 'sm') return 'compact'
-    if (screenSize === 'md') return 'normal'
+    if (screenSize === 'xs') return 'compact'
+    if (screenSize === 'sm') return 'normal'
     return 'large'
   }
 
@@ -314,9 +312,9 @@ export const useResponsiveModal = () => {
   const { screenSize } = useScreenSize()
 
   const getModalSize = (): string => {
-    if (screenSize === 'sm') {
+    if (screenSize === 'xs') {
       return 'w-full h-full m-0 rounded-none' // Fullscreen on mobile
-    } else if (screenSize === 'md') {
+    } else if (screenSize === 'sm') {
       return 'w-11/12 max-w-lg rounded-lg'
     } else {
       return 'w-full max-w-2xl rounded-lg'
@@ -324,7 +322,7 @@ export const useResponsiveModal = () => {
   }
 
   const getModalPosition = (): string => {
-    if (screenSize === 'sm') {
+    if (screenSize === 'xs') {
       return 'inset-0' // Fullscreen positioning
     } else {
       return 'inset-4 m-auto'
@@ -332,7 +330,7 @@ export const useResponsiveModal = () => {
   }
 
   const shouldUseDrawer = (): boolean => {
-    return screenSize === 'sm'
+    return screenSize === 'xs'
   }
 
   return {
@@ -347,18 +345,18 @@ export const useResponsiveForm = () => {
   const { screenSize } = useScreenSize()
 
   const getFormLayout = (): 'single-column' | 'two-column' | 'three-column' => {
-    if (screenSize === 'sm') return 'single-column'
-    if (screenSize === 'md') return 'two-column'
+    if (screenSize === 'xs') return 'single-column'
+    if (screenSize === 'sm') return 'two-column'
     return 'three-column'
   }
 
   const getFieldSpacing = (): string => {
-    if (screenSize === 'sm') return 'space-y-4'
+    if (screenSize === 'xs') return 'space-y-4'
     return 'space-y-6'
   }
 
   const getButtonSize = (): 'sm' | 'md' | 'lg' => {
-    if (screenSize === 'sm') return 'md'
+    if (screenSize === 'xs') return 'md'
     return 'lg'
   }
 

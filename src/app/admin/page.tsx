@@ -139,7 +139,15 @@ function OverviewTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
             </div>
           </div>
           <button
-            onClick={() => (stats.isPaused ? unpause() : pause())}
+            onClick={() => {
+              if (stats.isPaused) {
+                if (!window.confirm('Unpause the DAO? This will re-enable all state-changing operations for every member.')) return
+                unpause()
+              } else {
+                if (!window.confirm('Pause the DAO? This will halt new loans, votes, and proposals for every member immediately.')) return
+                pause()
+              }
+            }}
             disabled={isPending}
             className={`flex items-center space-x-2 px-4 py-2 rounded-md text-white disabled:opacity-50 ${
               stats.isPaused ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
@@ -170,6 +178,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
   const submitAddAdmin = async (e: FormEvent) => {
     e.preventDefault()
     if (!newAdmin.trim()) return
+    if (!window.confirm(`Add ${formatAddress(newAdmin.trim())} as an admin? This grants full admin privileges.`)) return
     await addAdmin(newAdmin.trim())
     setNewAdmin('')
     refetch()
@@ -179,6 +188,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
     e.preventDefault()
     const bps = Number(threshold)
     if (!Number.isFinite(bps) || bps <= 0 || bps > 10_000) return
+    if (!window.confirm(`Update consensus threshold from ${(stats.consensusThreshold / 100).toFixed(2)}% to ${(bps / 100).toFixed(2)}%? This changes the approval bar for every open proposal.`)) return
     await setThreshold(bps)
     setThresholdInput('')
   }
@@ -196,6 +206,7 @@ function GovernanceTab({ stats }: { stats: ReturnType<typeof useDAOStats> }) {
               <span className="font-mono text-sm text-foreground">{formatAddress(addr)}</span>
               <button
                 onClick={async () => {
+                  if (!window.confirm(`Remove admin ${formatAddress(addr)}? This action requires a remaining admin to re-add them.`)) return
                   await removeAdmin(addr)
                   refetch()
                 }}
