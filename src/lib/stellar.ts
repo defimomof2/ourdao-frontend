@@ -44,3 +44,14 @@ export const formatStellarAddress = (address?: string, chars = 4): string => {
   if (address.length <= chars * 2 + 1) return address
   return `${address.slice(0, chars)}…${address.slice(-chars)}`
 }
+
+/**
+ * Returns true when `value` is a well-formed Stellar public key or contract
+ * address in canonical (uppercase) form: starts with G or C followed by
+ * exactly 55 uppercase alphanumeric characters (base32 alphabet).
+ *
+ * This is the same pattern used in useNotifications.ts (`/^[GC][A-Z0-9]{55}$/`)
+ * lifted here so every part of the codebase shares a single source of truth.
+ */
+export const isStellarAddress = (value: string): boolean =>
+  /^[GC][A-Z0-9]{55}$/.test(value)
