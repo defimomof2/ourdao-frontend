@@ -21,7 +21,7 @@ import { useUserData, useVoting, useLoanProposals, type UILoanProposal } from '@
 import { useNow } from '@/hooks/useNow'
 import { formatToken, formatDate, formatAddress, calculatePercentage } from '@/lib/utils'
 import { PROPOSAL_STATUS_LABELS } from '@/constants'
-import { AppShell } from '@/components/AppShell'
+import { PageHeader } from '@/components/PageHeader'
 
 export default function LoansPage() {
   const userData = useUserData()
@@ -108,20 +108,21 @@ export default function LoansPage() {
   }
 
   return (
-    <AppShell
-      title="Loan Proposals"
-      subtitle="Browse and vote on member loan requests"
-      actions={
-        userData.isMember && !userData.hasActiveLoan ? (
-          <Button asChild size="lg" className="w-full sm:w-auto">
-            <Link href="/loans/request">
-              <Plus className="mr-2 h-5 w-5" />
-              Request Loan
-            </Link>
-          </Button>
-        ) : undefined
-      }
-    >
+    <>
+      <PageHeader
+        title="Loan Proposals"
+        subtitle="Browse and vote on member loan requests"
+        actions={
+          userData.isMember && !userData.hasActiveLoan ? (
+            <Button asChild size="lg" className="w-full sm:w-auto">
+              <Link href="/loans/request">
+                <Plus className="mr-2 h-5 w-5" />
+                Request Loan
+              </Link>
+            </Button>
+          ) : undefined
+        }
+      />
       <div>
         {/* Filters */}
         <Card className="mb-12 border border-border shadow-sm">
@@ -430,6 +431,6 @@ export default function LoansPage() {
           )}
         </div>
       </div>
-    </AppShell>
+    </>
   )
 }

@@ -4,8 +4,9 @@
  * Shared application shell: a sticky top bar plus a persistent sidebar on
  * desktop (a slide-over drawer on mobile). Renders the primary navigation from
  * a single source of truth, highlights the active route, and surfaces a banner
- * when no contract is configured. App pages wrap their content in <AppShell>
- * instead of hand-rolling their own header.
+ * when no contract is configured. Rendered once by (app)/layout.tsx, so it
+ * persists across navigation instead of remounting per page. A page's own
+ * title/subtitle/actions header is <PageHeader>, rendered by the page itself.
  */
 import { type ReactNode, useState } from 'react'
 import Link from 'next/link'
@@ -100,13 +101,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 interface AppShellProps {
-  title?: string
-  subtitle?: string
-  actions?: ReactNode
   children: ReactNode
 }
 
-export function AppShell({ title, subtitle, actions, children }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -176,19 +174,6 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
 
         {/* Main content */}
         <main className="min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">
-          {(title || actions) && (
-            <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                {title && (
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    {title}
-                  </h1>
-                )}
-                {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-              </div>
-              {actions && <div className="flex items-center gap-2">{actions}</div>}
-            </div>
-          )}
           {children}
         </main>
       </div>

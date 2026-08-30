@@ -76,9 +76,9 @@ describe('source audit – no surviving toBaseUnits', () => {
   const srcRoot = resolve(__dirname, '../src')
 
   const files = [
-    resolve(srcRoot, 'app/treasury/page.tsx'),
-    resolve(srcRoot, 'app/governance/create/page.tsx'),
-    resolve(srcRoot, 'app/loans/request/page.tsx'),
+    resolve(srcRoot, 'app/(app)/treasury/page.tsx'),
+    resolve(srcRoot, 'app/(app)/governance/create/page.tsx'),
+    resolve(srcRoot, 'app/(app)/loans/request/page.tsx'),
     resolve(srcRoot, 'lib/utils.ts'),
   ]
 
@@ -88,12 +88,12 @@ describe('source audit – no surviving toBaseUnits', () => {
   })
 
   it('treasury/page.tsx imports parseToken from @/lib/utils', () => {
-    const source = readFileSync(resolve(srcRoot, 'app/treasury/page.tsx'), 'utf8')
+    const source = readFileSync(resolve(srcRoot, 'app/(app)/treasury/page.tsx'), 'utf8')
     expect(source).toMatch(/import\s*\{[^}]*parseToken[^}]*\}\s*from\s*['"]@\/lib\/utils['"]/)
   })
 
   it('governance/create/page.tsx imports parseToken from @/lib/utils', () => {
-    const source = readFileSync(resolve(srcRoot, 'app/governance/create/page.tsx'), 'utf8')
+    const source = readFileSync(resolve(srcRoot, 'app/(app)/governance/create/page.tsx'), 'utf8')
     expect(source).toMatch(/import\s*\{[^}]*parseToken[^}]*\}\s*from\s*['"]@\/lib\/utils['"]/)
   })
 })

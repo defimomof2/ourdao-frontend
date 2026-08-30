@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders } from './test-utils'
-import TreasuryPage from '@/app/treasury/page'
+import TreasuryPage from '@/app/(app)/treasury/page'
 
 const mockIsMember = vi.fn()
 const mockIsAdmin = vi.fn()
