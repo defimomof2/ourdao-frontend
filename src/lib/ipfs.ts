@@ -262,8 +262,13 @@ export function canAccessDocument(
   if (metadata.permissions?.public) {
     return true
   }
-  
-  if (metadata.permissions?.allowedUsers?.includes(userAddress.toLowerCase())) {
+
+  // Stellar public keys are uppercase base32 (G… / C…, 56 chars).
+  // Do NOT lowercase — the canonical form is all-caps and lowercasing the
+  // needle means it can never match an address stored in canonical form.
+  // Compare both sides as-is; callers are responsible for passing the address
+  // in the same form it was stored (canonical uppercase for Stellar).
+  if (metadata.permissions?.allowedUsers?.includes(userAddress)) {
     return true
   }
   
